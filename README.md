@@ -6,10 +6,10 @@ Por ahora en esta versión lo que tenemos es la iniciación del servidor con una
 
 Ejecutamos 
 
-    `nodemon index`
+    nodemon index
 
 en una terminal en la carpeta del servidor
 
-    `npm start`
+    npm start
 
 en una terminal en la carpeta del cliente
