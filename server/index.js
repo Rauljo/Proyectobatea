@@ -19,7 +19,16 @@ app.get("/bateas", async (req, res) => {
 
 
 //Add bateas
+app.post("/bateas", async (req, res) => {
+    try {
+        const { name, polygon } = req.body;
+        const newBatea = await pool.query("INSERT INTO bateas (name, polygon) VALUES($1, $2) RETURNING *", [name, polygon]);
+        res.json(newBatea.rows[0]);
+    } catch (err) {
+        console.error(err.message);
+    }
 
+});
 
 
 app.listen(5010, () => {
