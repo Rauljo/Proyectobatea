@@ -28,13 +28,24 @@ app.post("/bateas", async (req, res) => {
         //We also add as many sectors as the user wants
         for (let i = 0; i < x; i++) {
             for (let j = 0; j < y; j++) {
-                const newSector = await pool.query("INSERT INTO sectores (x, y, batea, cuerdas) VALUES($1, $2, $3, 0) RETURNING *", [i, j, newBatea.rows[0].id]);
+                const newSector = await pool.query("INSERT INTO sectores (x, y, batea, cuerdas_cria, cuerdas_cultivo) VALUES($1, $2, $3, 0, 0) RETURNING *", [i, j, newBatea.rows[0].id]);
             }
         }
     } catch (err) {
         console.error(err.message);
     }
 
+});
+
+//Get sectors of a batea
+app.get("/sectores/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const sectores = await pool.query("SELECT * FROM sectores WHERE batea = $1", [id]);
+        res.json(sectores.rows);
+    } catch (err) {
+        console.error(err.message);
+    }
 });
 
 
