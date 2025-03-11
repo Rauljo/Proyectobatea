@@ -5,10 +5,12 @@ import axios from "axios";
 import { Autocomplete, TextField, CircularProgress } from "@mui/material";
 
 
-const Selector_Menu = () => {
+const Selector_Menu = ({ onSelectBatea }) => {
 
     const [options, setOptions] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [selectedBatea, setSelectedBatea] = useState(null);  // Estado para la batea seleccionada
+
 
     useEffect(() => {
         const fetchOptions = async () => {
@@ -33,9 +35,15 @@ const Selector_Menu = () => {
             <h2>Selector Menu</h2>
             <Autocomplete
                 id="bateas"
+                value = {selectedBatea}
                 options={options}
                 getOptionLabel={(option) => option.name}
                 style={{ width: 300 }}
+                onChange={(event, newValue) => {if(newValue) {
+                    const selectedBatea = options.find(option => option.name === newValue.name);
+                    setSelectedBatea(newValue); // Actualizamos el estado con el valor seleccionado
+                    onSelectBatea(selectedBatea);
+                 }}} //Pass selected item to parent
                 renderInput={(params) => <TextField {...params} label="Bateas" />}
             />
             {loading && <CircularProgress />}
