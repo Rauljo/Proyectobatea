@@ -6,6 +6,10 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
+import Stack from '@mui/material/Stack';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel, Paper } from '@mui/material';
+
+
 
 import axios from "axios";
 
@@ -14,6 +18,10 @@ export default function FormDialog() {
 
   const[name, setName] = React.useState("");
   const[polygon, setPolygon] = React.useState("");
+  const[x, setX] = React.useState("");
+  const[y, setY] = React.useState("");
+
+
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -25,7 +33,7 @@ export default function FormDialog() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const data = { name, polygon };
+    const data = { name, polygon, x, y };
 
     try {
         const response = await axios.post("http://localhost:5010/bateas", data);
@@ -40,6 +48,24 @@ export default function FormDialog() {
     
     };
 
+  // Generar las filas y columnas de la tabla
+  const generateTable = () => {
+    let rows = [];
+    for (let i = 0; i < y; i++) {
+      let cols = [];
+      for (let j = 0; j < x; j++) {
+        cols.push(
+          <TableCell key={j} sx={{ border: '1px solid black', textAlign: 'center' }}>
+            {i + 1} - {j + 1}
+          </TableCell>
+        );
+      }
+      rows.push(<TableRow key={i}>{cols}</TableRow>);
+    }
+    return rows;
+  };
+
+    
   return (
     <React.Fragment>
       <Button variant="outlined" onClick={handleClickOpen}>
@@ -89,6 +115,43 @@ export default function FormDialog() {
                     setPolygon(event.target.value);
                 }}
             />
+            <Stack direction="row" spacing={2}>
+                <TextField
+                  required
+                  margin="dense"
+                  id="x"
+                  name="X"
+                  label="X"
+                  type="number"
+                  fullWidth
+                  variant="standard"
+                  value={x}
+                  onChange={(event) => setX(event.target.value)}
+                />
+                <TextField
+                  required
+                  margin="dense"
+                  id="y"
+                  name="Y"
+                  label="Y"
+                  type="number"
+                  fullWidth
+                  variant="standard"
+                  value={y}
+                  onChange={(event) => setY(event.target.value)}
+                />
+              </Stack>
+
+            {/* Show batea grid */}
+            <TableContainer component={Paper} style={{ marginTop: '20px' }}>
+                <Table>
+                <TableHead>
+                    <TableRow sx={{ borderTop: '1px solid black' }}>
+                    </TableRow>
+                </TableHead>
+                <TableBody>{generateTable()}</TableBody>
+                </Table>
+            </TableContainer>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>

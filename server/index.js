@@ -21,9 +21,16 @@ app.get("/bateas", async (req, res) => {
 //Add bateas
 app.post("/bateas", async (req, res) => {
     try {
-        const { name, polygon } = req.body;
-        const newBatea = await pool.query("INSERT INTO bateas (name, polygon) VALUES($1, $2) RETURNING *", [name, polygon]);
+        const { name, polygon, x, y} = req.body;
+        const newBatea = await pool.query("INSERT INTO bateas (name, polygon, x_sector, y_sector) VALUES($1, $2, $3, $4) RETURNING *", [name, polygon, x, y]);
         res.json(newBatea.rows[0]);
+
+        //We also add as many sectors as the user wants
+        for (let i = 0; i < x; i++) {
+            for (let j = 0; j < y; j++) {
+                const newSector = await pool.query("INSERT INTO sectores (x, y, batea, cuerdas) VALUES($1, $2, $3, 0) RETURNING *", [i, j, newBatea.rows[0].id]);
+            }
+        }
     } catch (err) {
         console.error(err.message);
     }
