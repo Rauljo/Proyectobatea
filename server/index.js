@@ -48,6 +48,18 @@ app.get("/sectores/:id", async (req, res) => {
     }
 });
 
+//Insert movement based on x, y and batea
+app.post("/movimientos", async (req, res) => {
+    try {
+        const { x, y, batea, tipo_cuerda, cantidad, tipo_operacion } = req.body;
+        const newMovimiento = await pool.query("INSERT INTO movimientos (tipo_cuerda, cantidad, operacion, sector_x, sector_y, sector_batea) VALUES($1, $2, $3, $4, $5, $6) RETURNING *", 
+            [tipo_cuerda, cantidad, tipo_operacion, x, y, batea]);
+        res.json(newMovimiento.rows[0]);
+    } catch (err) {
+        console.error(err.message);
+    }
+});
+
 
 app.listen(5010, () => {
     console.log('Server is running on port 5010');

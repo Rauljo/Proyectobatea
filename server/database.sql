@@ -1,5 +1,9 @@
 CREATE DATABASE bateas;
 
+drop table movimientos;
+drop table sectores;
+drop table bateas;
+
 CREATE TABLE bateas(
 	id SERIAL primary key,
 	name varchar(25),
@@ -12,28 +16,80 @@ CREATE TABLE sectores(
 	x int,
 	y int,
 	batea int,
-	cuerdas_cria int,
-	cuerdas_cultivo int,
+	cuerdas_cria int default 0,
+	cuerdas_cultivo int default 0,
 	primary key (x,y,batea),
 	foreign key(batea) references bateas(id)
-)
+);
 
-drop table bateas
-drop table sectores
+create table movimientos (
+	id serial primary key,
+	tipo_cuerda varchar(10) check (tipo_cuerda in ('cria', 'cultivo')),
+	cantidad int,
+	operacion varchar(10) check (operacion in ('entrada', 'salida')),
+	sector_x int,
+	sector_y int,
+	sector_batea int,
+	fecha timestamp default current_timestamp,
+	foreign key(sector_x, sector_y, sector_batea) references sectores(x,y,batea)
+);
 
-insert into bateas (name, polygon, x_sector, y_sector) values ('Frangarbe', 'Arousa', 2, 3)	
+create or replace function actualizar_cuerdas_after_insert()
+returns trigger as $$
+begin
+	-- if insert, sum
+	if new.operacion = 'entrada' then
+		if new.tipo_cuerda = 'cria' then
+			update sectores set cuerdas_cria = cuerdas_cria + new.cantidad
+			where x = new.sector_x and y = new.sector_y and batea = new.sector_batea;
+		elsif new.tipo_cuerda = 'cultivo' then
+			update sectores set cuerdas_cultivo = cuerdas_cultivo + new.cantidad
+			where x = new.sector_x and y = new.sector_y and batea = new.sector_batea;
+		end if;
+	-- if delete, substract
+	elsif new.operacion = 'salida' then
+		if new.tipo_cuerda = 'cria' then
+			update sectores set cuerdas_cria = cuerdas_cria - new.cantidad
+			where x = new.sector_x and y = new.sector_y and batea = new.sector_batea;
+		elsif new.tipo_cuerda = 'cultivo' then
+			update sectores set cuerdas_cultivo = cuerdas_cultivo - new.cantidad
+			where x = new.sector_x and y = new.sector_y and batea = new.sector_batea;
+		end if;
+	end if;
+	return new;
+end;
+$$language plpgsql;
 
-insert into sectores (x, y, batea, cuerdas_cria, cuerdas_cultivo) values (0,0,1,10,10)
-insert into sectores (x, y, batea, cuerdas_cria, cuerdas_cultivo) values (0,1,1,12,10)
-insert into sectores (x, y, batea, cuerdas_cria, cuerdas_cultivo) values (0,2,1,40,20)
-insert into sectores (x, y, batea, cuerdas_cria, cuerdas_cultivo) values (1,0,1,20,30)
-insert into sectores (x, y, batea, cuerdas_cria, cuerdas_cultivo) values (1,1,1,30,40)
-insert into sectores (x, y, batea, cuerdas_cria, cuerdas_cultivo) values (1,2,1,20,50)
+create trigger actualizar_cuerdas_after_insert_trigger
+after insert on movimientos 
+for each row
+execute function actualizar_cuerdas_after_insert();
 
 
-insert into bateas (name, polygon, x_sector, y_sector) values ('Indemosa I', 'Arousa', 3, 2)
-insert into bateas (name, polygon, x_sector, y_sector) values ('Luisa IV', 'Cambados', 4, 4)	
 
-select * from bateas
+insert into bateas (name, polygon, x_sector, y_sector) values ('Frangarbe', 'Arousa', 2, 3);
 
-select * from sectores where batea=6
+insert into sectores (x, y, batea, cuerdas_cria, cuerdas_cultivo) values (0,0,1,10,10);
+insert into sectores (x, y, batea, cuerdas_cria, cuerdas_cultivo) values (0,1,1,12,10);
+insert into sectores (x, y, batea, cuerdas_cria, cuerdas_cultivo) values (0,2,1,40,20);
+insert into sectores (x, y, batea, cuerdas_cria, cuerdas_cultivo) values (1,0,1,20,30);
+insert into sectores (x, y, batea, cuerdas_cria, cuerdas_cultivo) values (1,1,1,30,40);
+insert into sectores (x, y, batea, cuerdas_cria, cuerdas_cultivo) values (1,2,1,20,50);
+
+select * from sectores where batea=1
+select * from movimientos
+--insert
+insert into movimientos (id, tipo_cuerda, cantidad, operacion, sector_x, sector_y, sector_batea) values (1, 'cria', 10, 'entrada', 0, 0, 1);
+insert into movimientos (id, tipo_cuerda, cantidad, operacion, sector_x, sector_y, sector_batea) values (2, 'cultivo', 10, 'entrada', 0, 0, 1);
+
+--delete
+insert into movimientos (id, tipo_cuerda, cantidad, operacion, sector_x, sector_y, sector_batea) values (3, 'cria', 5, 'salida', 0, 0, 1);
+insert into movimientos (id, tipo_cuerda, cantidad, operacion, sector_x, sector_y, sector_batea) values (4, 'cultivo', 5, 'salida', 0, 0, 1);
+
+
+insert into bateas (name, polygon, x_sector, y_sector) values ('Indemosa I', 'Arousa', 3, 2);
+insert into bateas (name, polygon, x_sector, y_sector) values ('Luisa IV', 'Cambados', 4, 4);
+
+select * from bateas;
+
+select * from sectores where batea=6;
