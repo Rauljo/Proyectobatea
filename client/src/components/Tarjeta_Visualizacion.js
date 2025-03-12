@@ -1,13 +1,51 @@
 import React, { Fragment, useState } from "react";
 import { Box, Button, Card, CardContent, Typography, Stack, TextField } from "@mui/material";
+import axios from "axios";
 
-const TipoCuerda = ({ cantidad, tipo }) => {
+const TipoCuerda = ({ cantidad, tipo, sector}) => {
   const [value, setValue] = useState(0);
+  const [cantidad_actual, setCantidad] = useState(cantidad);
 
   const handleChange = (event) => {
     const newValue = parseInt(event.target.value, 10) || 0;
     setValue(newValue);
   };
+
+  const handleNewMovement = async (event) => {
+    //Generate new entrada movement
+    event.preventDefault();
+
+   const operacion = value >= 0 ? "entrada" : "salida";
+   const cantidad = Math.abs(value);
+
+    const data = {
+        x: sector.x,
+        y: sector.y,
+        batea: sector.batea,
+        tipo_cuerda: tipo,
+        cantidad: cantidad,
+        tipo_operacion: operacion,
+    };
+
+    console.log(data);
+
+    try {
+      const response = await axios.post("http://localhost:5010/movimientos", data);
+
+      if (response.status == 200 || response.status == 201) {
+        console.log("Entrada añadida correctamente");
+        //window.location.reload();
+        setCantidad(cantidad_actual + value);
+        setValue(0);
+      }
+    } catch (error) {
+      console.error(error.message);
+    }
+
+
+  };
+
+  
 
   return (
     <Stack
@@ -22,36 +60,30 @@ const TipoCuerda = ({ cantidad, tipo }) => {
       }}
     >
       <Typography variant="h6">
-        {tipo}: {cantidad}
+        {tipo}: {cantidad_actual}
       </Typography>
       <Button
         variant="contained"
         size="small"
-        onClick={() => setValue((prev) => prev + 1)}
+        onClick={handleNewMovement}
       >
-        +
-      </Button>
-      <Button
-        variant="contained"
-        color="error"
-        size="small"
-        onClick={() => setValue((prev) => Math.max(0, prev - 1))}
-      >
-        -
+        New
       </Button>
       <TextField
         type="number"
         size="small"
         value={value}
         onChange={handleChange}
-        inputProps={{ min: 0 }}
-        sx={{ width: 60 }}
+        sx={{ width: 70 }}
       />
     </Stack>
   );
 };
 
 const Tarjeta = ({sector}) => {
+
+    //Functions to add movements
+
   return (
     <Card
       sx={{
@@ -68,8 +100,8 @@ const Tarjeta = ({sector}) => {
           Sector {sector.x} - {sector.y}
         </Typography>
         <Stack spacing={2}>
-          <TipoCuerda cantidad={sector.cuerdas_cria} tipo="Cría" />
-          <TipoCuerda cantidad={sector.cuerdas_cultivo} tipo="Cultivo" />
+          <TipoCuerda cantidad={sector.cuerdas_cria} tipo="cria" sector={{"x": sector.x, "y": sector.y, "batea": sector.batea}}/>
+          <TipoCuerda cantidad={sector.cuerdas_cultivo} tipo="cultivo" sector={{"x": sector.x, "y": sector.y, "batea": sector.batea}}/>
         </Stack>
       </CardContent>
     </Card>
