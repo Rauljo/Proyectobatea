@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Grid from '@mui/material/Grid2';
+import { Box, Typography, TextField } from '@mui/material';
+
 
 
 import Tarjeta from './Tarjeta_Visualizacion';
@@ -29,6 +31,118 @@ const MatrizSectores = ({ batea, bateaData }) => {
     </Grid>
     );
   };
+
+  const Info_Bateas = ({ batea }) => {
+    return (
+      <Box
+            sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                marginTop: '40px',
+                marginX: 'auto',
+                marginY: '40px',
+                border: '1px solid #ddd', // Borde exterior suave
+                boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
+                borderRadius: '8px',
+                padding: '20px',
+                backgroundColor: 'white',
+                width: '80%',
+                maxWidth: '1200px',
+            }}
+        >
+            <div>
+                <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: '#333' }}>
+                    Visualizar Batea
+                </Typography>
+
+                <Grid container spacing={4} justifyContent="center">
+                    <Grid item xs={6} md={3}>
+                        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                            <Typography variant="subtitle1" sx={{ fontWeight: 'bold', marginBottom: '8px' }}>
+                                Nombre
+                            </Typography>
+                            <Box
+                                sx={{
+                                    border: '2px solid #bbb', // Borde gris claro
+                                    borderRadius: '8px',
+                                    padding: '16px',
+                                    textAlign: 'center',
+                                    backgroundColor: '#f9f9f9',
+                                    fontSize: '1.2rem',
+                                    fontWeight: 'bold',
+                                }}
+                            >
+                                <Typography variant="body1">{batea.name}</Typography>
+                            </Box>
+                        </Box>
+                    </Grid>
+                    <Grid item xs={6} md={3}>
+                        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                            <Typography variant="subtitle1" sx={{ fontWeight: 'bold', marginBottom: '8px' }}>
+                                Polígono
+                            </Typography>
+                            <Box
+                                sx={{
+                                    border: '2px solid #bbb', // Borde gris claro
+                                    borderRadius: '8px',
+                                    padding: '16px',
+                                    textAlign: 'center',
+                                    backgroundColor: '#f9f9f9',
+                                    fontSize: '1.2rem',
+                                    fontWeight: 'bold',
+                                }}
+                            >
+                                <Typography variant="body1">{batea.polygon}</Typography>
+                            </Box>
+                        </Box>
+                    </Grid>
+                    <Grid item xs={6} md={3}>
+                        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                            <Typography variant="subtitle1" sx={{ fontWeight: 'bold', marginBottom: '8px' }}>
+                                X
+                            </Typography>
+                            <Box
+                                sx={{
+                                    border: '2px solid #bbb', // Borde gris claro
+                                    borderRadius: '8px',
+                                    padding: '16px',
+                                    textAlign: 'center',
+                                    backgroundColor: '#f9f9f9',
+                                    fontSize: '1.2rem',
+                                    fontWeight: 'bold',
+                                }}
+                            >
+                                <Typography variant="body1">{batea.x_sector}</Typography>
+                            </Box>
+                        </Box>
+                    </Grid>
+                    <Grid item xs={6} md={3}>
+                        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                            <Typography variant="subtitle1" sx={{ fontWeight: 'bold', marginBottom: '8px' }}>
+                                Y
+                            </Typography>
+                            <Box
+                                sx={{
+                                    border: '2px solid #bbb', // Borde gris claro
+                                    borderRadius: '8px',
+                                    padding: '16px',
+                                    textAlign: 'center',
+                                    backgroundColor: '#f9f9f9',
+                                    fontSize: '1.2rem',
+                                    fontWeight: 'bold',
+                                }}
+                            >
+                                <Typography variant="body1">{batea.y_sector}</Typography>
+                            </Box>
+                        </Box>
+                    </Grid>
+                </Grid>
+            </div>
+        </Box>
+
+    )
+  }
   
 
 
@@ -61,14 +175,7 @@ const Visualizar_Batea = ({ batea }) => {
     return (
         <div>
             {loading && <p>Cargando...</p>}
-            <div>
-                
-                <h2>Visualizar Batea</h2>
-                <p> Nombre: {batea.name} </p>
-                <p> Poligono: {batea.polygon} </p>
-                <p> X: {batea.x_sector} </p>
-                <p> Y: {batea.y_sector} </p>
-            </div>
+            <Info_Bateas batea={batea} />
 
             {/*Ahora ponemos la informacion de los sectores*/}
 
