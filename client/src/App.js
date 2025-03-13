@@ -7,11 +7,11 @@ import Data_Insertion from './components/Data_Insertion';
 
 function App() {
   return (
-    <Fragment>
+    <div>
       <h1>APP BATEAS</h1>
 
       <Data_Insertion />
-    </Fragment>
+    </div>
   );
 }
 
