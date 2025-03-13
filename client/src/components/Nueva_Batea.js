@@ -7,7 +7,6 @@ import FormDialog from "./Form_Dialog";
 const Nueva_Batea = () => {
     return (
         <Fragment>
-            <h2>Nueva Batea</h2>
             <FormDialog />
         </Fragment>
     );

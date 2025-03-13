@@ -32,7 +32,6 @@ const Selector_Menu = ({ onSelectBatea }) => {
 
     return (
         <Fragment>
-            <h2>Selector Menu</h2>
             <Autocomplete
                 id="bateas"
                 value = {selectedBatea}
