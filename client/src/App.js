@@ -3,13 +3,13 @@ import React, { Fragment, useState } from "react";
 import './App.css';
 
 import Data_Insertion from './components/Data_Insertion';
+import Navigation from "./components/Menu";
 
 
 function App() {
   return (
     <div>
-      <h1>APP BATEAS</h1>
-
+      <Navigation />
       <Data_Insertion />
     </div>
   );
