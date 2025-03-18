@@ -57,6 +57,7 @@ app.post("/movimientos", async (req, res) => {
         res.json(newMovimiento.rows[0]);
     } catch (err) {
         console.error(err.message);
+        //res.status(500).send("Error en el servidor");
     }
 });
 
