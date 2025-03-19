@@ -2,7 +2,7 @@ import React, { Fragment, useState } from "react";
 import { Box, Button, Card, CardContent, Typography, Stack, TextField } from "@mui/material";
 import axios from "axios";
 
-const TipoCuerda = ({ cantidad, tipo, sector}) => {
+const TipoCuerda = ({ cantidad, tipo, sector, onlyvisual}) => {
   const [value, setValue] = useState(0);
   const [cantidad_actual, setCantidad] = useState(cantidad);
 
@@ -62,7 +62,7 @@ const TipoCuerda = ({ cantidad, tipo, sector}) => {
       <Typography variant="h6">
         {tipo}: {cantidad_actual}
       </Typography>
-      <Button
+      {!onlyvisual && ( <div><Button
         variant="contained"
         size="small"
         onClick={handleNewMovement}
@@ -75,12 +75,12 @@ const TipoCuerda = ({ cantidad, tipo, sector}) => {
         value={value}
         onChange={handleChange}
         sx={{ width: 70 }}
-      />
+      /></div>)}
     </Stack>
   );
 };
 
-const Tarjeta = ({sector}) => {
+const Tarjeta = ({sector, onlyvisual}) => {
 
     //Functions to add movements
 
@@ -100,8 +100,8 @@ const Tarjeta = ({sector}) => {
           Sector {sector.x} - {sector.y}
         </Typography>
         <Stack spacing={2}>
-          <TipoCuerda cantidad={sector.cuerdas_cria} tipo="cria" sector={{"x": sector.x, "y": sector.y, "batea": sector.batea}}/>
-          <TipoCuerda cantidad={sector.cuerdas_cultivo} tipo="cultivo" sector={{"x": sector.x, "y": sector.y, "batea": sector.batea}}/>
+          <TipoCuerda cantidad={sector.cuerdas_cria} tipo="cria" sector={{"x": sector.x, "y": sector.y, "batea": sector.batea}} onlyvisual={onlyvisual}/>
+          <TipoCuerda cantidad={sector.cuerdas_cultivo} tipo="cultivo" sector={{"x": sector.x, "y": sector.y, "batea": sector.batea}} onlyvisual={onlyvisual}/>
         </Stack>
       </CardContent>
     </Card>

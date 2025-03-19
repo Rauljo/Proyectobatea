@@ -7,7 +7,7 @@ import { Box, Typography, TextField } from '@mui/material';
 
 import Tarjeta from './Tarjeta_Visualizacion';
 
-const MatrizSectores = ({ batea, bateaData }) => {
+const MatrizSectores = ({ batea, bateaData, onlyvisual }) => {
   
     return (
         <Grid container spacing={2} direction="column">
@@ -20,7 +20,7 @@ const MatrizSectores = ({ batea, bateaData }) => {
                 console.log(sector);
                 return (
                     <Grid item key={`sector-${x}-${y}`}>
-                      <Tarjeta sector={sector} />
+                      <Tarjeta sector={sector} onlyvisual={onlyvisual}/>
                     </Grid>
                   );
             }
@@ -147,7 +147,7 @@ const MatrizSectores = ({ batea, bateaData }) => {
 
 
 
-const Visualizar_Batea = ({ batea }) => {
+const Visualizar_Batea = ({ batea, onlyvisual }) => {
 
     const [bateaData, setBateaData] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -180,7 +180,7 @@ const Visualizar_Batea = ({ batea }) => {
             {/*Ahora ponemos la informacion de los sectores*/}
 
             <div>
-                <MatrizSectores batea={batea} bateaData={bateaData} />
+                <MatrizSectores batea={batea} bateaData={bateaData} onlyvisual={onlyvisual} />
             </div>
         </div>
     );
