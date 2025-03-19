@@ -76,7 +76,7 @@ app.get("/bateas/:id", async (req, res) => {
 app.get("/movimientos/:id", async (req, res) => {
     try {
         const { id } = req.params;
-        const movimientos = await pool.query("SELECT * FROM movimientos WHERE sector_batea = $1", [id]);
+        const movimientos = await pool.query("SELECT * FROM movimientos WHERE sector_batea = $1 LIMIT 30", [id]);
         res.json(movimientos.rows);
     } catch (err) {
         console.error(err.message);
