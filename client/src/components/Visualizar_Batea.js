@@ -187,3 +187,4 @@ const Visualizar_Batea = ({ batea, onlyvisual }) => {
 }
 
 export default Visualizar_Batea;
+export { Info_Bateas };
