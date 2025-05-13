@@ -47,6 +47,8 @@ const Visualizar_Movimientos = ({batea}) => {
                         <TableCell><strong>Tipo de cuerda</strong></TableCell>
                         <TableCell><strong>Cantidad</strong></TableCell>
                         <TableCell><strong>Operación</strong></TableCell>
+                        <TableCell><strong>Fecha Previa</strong></TableCell>
+                        <TableCell><strong>Nota</strong></TableCell>
                     </TableRow>
                     </TableHead>
                     <TableBody>
@@ -64,6 +66,8 @@ const Visualizar_Movimientos = ({batea}) => {
                             >
                             {movimiento.operacion}
                         </TableCell>
+                        <TableCell>{movimiento.fecha_previa}</TableCell>
+                        <TableCell>{movimiento.nota}</TableCell>
                         </TableRow>
                     ))}
                     </TableBody>

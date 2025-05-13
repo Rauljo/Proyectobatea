@@ -33,6 +33,8 @@ create table movimientos (
 	sector_y int,
 	sector_batea int,
 	fecha timestamp default current_timestamp,
+    fecha_previa timestamp default null,
+    nota varchar(255) default '',
 	foreign key(sector_x, sector_y, sector_batea) references sectores(x,y,batea)
 );
 
