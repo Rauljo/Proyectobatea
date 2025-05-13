@@ -13,6 +13,15 @@ import {
     FormControl,
     InputLabel
 } from '@mui/material';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton
+} from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+
 import axios from 'axios';
 
 const Insertion_Form = ({ batea, selectedCell, sectores, onManualCellSelect, onSectorUpdate }) => {
@@ -21,6 +30,12 @@ const Insertion_Form = ({ batea, selectedCell, sectores, onManualCellSelect, onS
     const [cantidad, setCantidad] = useState('');
     const [rowInput, setRowInput] = useState('');
     const [colInput, setColInput] = useState('');
+
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [destinoBateaId, setDestinoBateaId] = useState('');
+    const [destinoRow, setDestinoRow] = useState('');
+    const [destinoCol, setDestinoCol] = useState('');
+
 
     // Sincronizar inputs con la celda seleccionada
     useEffect(() => {
@@ -51,37 +66,76 @@ const Insertion_Form = ({ batea, selectedCell, sectores, onManualCellSelect, onS
         }
     };
 
-    const handleSubmit = async () => {
-        if (!selectedCell || !selectedCuerdaType || !cantidad) return;
-
+    const enviarMovimiento = async (destino = null) => {
         const [x, y] = selectedCell;
         const bateaId = batea.id;
+        const cantidadParsed = parseInt(cantidad);
+
+        console.log('Enviando movimiento:', {
+            x,
+            y,
+            bateaId,
+            selectedCuerdaType,
+            cantidadParsed,
+            movementType,
+            destino
+        });
 
         try {
-            const cantidadParsed = parseInt(cantidad);
-            const response = await axios.post('http://localhost:5010/movimientos', {
+
+
+            const payload = {
                 x,
                 y,
                 batea: bateaId,
                 tipo_cuerda: selectedCuerdaType,
                 cantidad: cantidadParsed,
-                tipo_operacion: movementType
-            });
+                tipo_operacion: movementType,
+            };
 
+            if (movementType === 'intercambio' && destino) {
+                payload.tipo_operacion = 'salida';
+            };
+
+            // Enviar movimiento base
+            const response = await axios.post('http://localhost:5010/movimientos', payload);
             console.log('Movimiento enviado:', response.data);
 
-            // Llamar callback si se proporciona
-            if (onSectorUpdate) {
-                // Esta parte dependerá de cómo quieras actualizarlo. Aquí no se actualiza el valor local directamente.
-                onSectorUpdate(x, y); 
-            }
+            //Ahora, si hay un intercambio, enviamos el movimiento de entrada
+            if (movementType === 'intercambio' && destino) {
+                payload.x = destino.x;
+                payload.y = destino.y;
+                payload.batea = destino.bateaId;
+                payload.tipo_operacion = 'entrada';
 
-            // Limpiar campos
+                const response = await axios.post('http://localhost:5010/movimientos', payload);
+                console.log('Movimiento de entrada enviado:', response.data);
+
+            };
+
+            if (onSectorUpdate) onSectorUpdate(x, y);
+
+            // Limpiar estados
             setCantidad('');
             setSelectedCuerdaType('');
+            setDestinoBateaId('');
+            setDestinoRow('');
+            setDestinoCol('');
+            setDialogOpen(false);
 
         } catch (error) {
             console.error('Error al enviar el movimiento:', error);
+        }
+    };
+
+    const handleSubmit = async () => {
+        if (!selectedCell || !selectedCuerdaType || !cantidad) return;
+
+        if (movementType === 'intercambio') {
+            setDialogOpen(true);  // abrir diálogo
+            console.log('Intercambio seleccionado');
+        } else {
+            enviarMovimiento();  // entrada o salida normales
         }
     };
 
@@ -131,6 +185,7 @@ const Insertion_Form = ({ batea, selectedCell, sectores, onManualCellSelect, onS
                 >
                     <ToggleButton value="entrada">Entrada</ToggleButton>
                     <ToggleButton value="salida">Salida</ToggleButton>
+                    <ToggleButton value="intercambio">Intercambio</ToggleButton>
                 </ToggleButtonGroup>
 
                 <FormControl fullWidth sx={{ mt: 2 }}>
@@ -168,6 +223,70 @@ const Insertion_Form = ({ batea, selectedCell, sectores, onManualCellSelect, onS
                     Enviar Movimiento
                 </Button>
             </CardContent>
+            <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} fullWidth>
+                <DialogTitle>
+                    Indicar destino del intercambio
+                    <IconButton
+                        aria-label="close"
+                        onClick={() => setDialogOpen(false)}
+                        sx={{ position: 'absolute', right: 8, top: 8 }}
+                    >
+                        <CloseIcon />
+                    </IconButton>
+                </DialogTitle>
+                <DialogContent dividers>
+                    <FormControl fullWidth sx={{ mt: 2 }}>
+                        <TextField
+                            fullWidth
+                            label="Batea Destino (ID)"
+                            type="text"
+                            sx={{ mt: 2 }}
+                            value={destinoBateaId}
+                            onChange={(e) => setDestinoBateaId(e.target.value)}
+                        />
+                    </FormControl>
+                    <Grid container spacing={2} sx={{ mt: 1 }}>
+                        <Grid item xs={6}>
+                            <TextField
+                                label="Fila Destino"
+                                type="number"
+                                fullWidth
+                                value={destinoRow}
+                                onChange={(e) => setDestinoRow(e.target.value)}
+                            />
+                        </Grid>
+                        <Grid item xs={6}>
+                            <TextField
+                                label="Columna Destino"
+                                type="number"
+                                fullWidth
+                                value={destinoCol}
+                                onChange={(e) => setDestinoCol(e.target.value)}
+                            />
+                        </Grid>
+                    </Grid>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setDialogOpen(false)} color="secondary">
+                        Cancelar
+                    </Button>
+                    <Button
+                        onClick={() =>
+                            console.log(destinoBateaId, parseInt(destinoCol)-1, parseInt(destinoRow)-1) ||
+                            enviarMovimiento({
+                                bateaId: destinoBateaId,
+                                x: parseInt(destinoCol) - 1,
+                                y: parseInt(destinoRow) - 1
+                            })
+                        }
+                        color="primary"
+                        variant="contained"
+                        disabled={!destinoBateaId || !destinoRow || !destinoCol}
+                    >
+                        Confirmar Intercambio
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Card>
     );
 };
