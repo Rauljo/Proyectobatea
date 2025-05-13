@@ -53,7 +53,7 @@ const Visualizar_Movimientos = ({batea}) => {
                     {movimientos.map((movimiento) => (
                         <TableRow key={movimiento.id}>
                         <TableCell>{new Date(movimiento.fecha).toISOString().split('T')[0]}</TableCell>
-                        <TableCell>{movimiento.sector_x}-{movimiento.sector_y}</TableCell>
+                        <TableCell>{movimiento.sector_x+1}-{movimiento.sector_y+1}</TableCell>
                         <TableCell>{movimiento.tipo_cuerda}</TableCell>
                         <TableCell>{movimiento.cantidad}</TableCell>
                         <TableCell

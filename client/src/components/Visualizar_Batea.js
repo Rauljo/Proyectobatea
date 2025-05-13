@@ -3,36 +3,67 @@ import axios from 'axios';
 import Grid from '@mui/material/Grid2';
 import { Box, Typography, TextField } from '@mui/material';
 
+const MatrizSectores = ({ batea, bateaData }) => {
+  const totalX = batea.x_sector;
+  const totalY = batea.y_sector;
 
+  // Cuanto mayor sea el número de sectores, menor será el tamaño de celda
+  const cellSize = Math.max(40, 100 - Math.max(totalX, totalY) * 2); // Ajustable
 
-import Tarjeta from './Tarjeta_Visualizacion';
+  return (
+    <Box
+      sx={{
+        display: 'grid',
+        gridTemplateColumns: `repeat(${totalX}, ${cellSize}px)`,
+        gap: '6px',
+        marginTop: '20px',
+        justifyContent: 'center',
+      }}
+    >
+      {Array.from({ length: totalY }).flatMap((_, y) =>
+        Array.from({ length: totalX }).map((_, x) => {
+          const sector = bateaData.find((s) => s.x === x && s.y === y);
 
-const MatrizSectores = ({ batea, bateaData, onlyvisual }) => {
-  
-    return (
-        <Grid container spacing={2} direction="column">
-      {[...Array(batea.y_sector)].map((_, y) => (
-        <Grid container item direction="row" key={`row-${y}`} spacing={2}>
-          {[...Array(batea.x_sector)].map((_,x) => {
-            const sector = bateaData.find((s) => s.x === x && s.y === y);
-            console.log(bateaData);
-            if (sector){
-                console.log(sector);
-                return (
-                    <Grid item key={`sector-${x}-${y}`}>
-                      <Tarjeta sector={sector} onlyvisual={onlyvisual}/>
-                    </Grid>
-                  );
-            }
-            
-          })}
-        </Grid>
-      ))}
-    </Grid>
-    );
-  };
+          return (
+            <Box
+              key={`${x}-${y}`}
+              sx={{
+                width: `${cellSize}px`,
+                height: `${cellSize}px`,
+                backgroundColor: '#e0e0e0',
+                borderRadius: '8px',
+                textAlign: 'center',
+                padding: '4px',
+                fontSize: '12px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
+                boxShadow: 1,
+              }}
+            >
+              <Typography variant="body2" fontWeight="bold">
+                {x+1} - {y+1}
+              </Typography>
+              {sector ? (
+                <>
+                  <Typography variant="caption">Cría: {sector.cuerdas_cria}</Typography>
+                  <Typography variant="caption">Cultivo: {sector.cuerdas_cultivo}</Typography>
+                </>
+              ) : (
+                <Typography variant="caption" color="text.secondary">
+                  Sin datos
+                </Typography>
+              )}
+            </Box>
+          );
+        })
+      )}
+    </Box>
+  );
+};
 
-  const Info_Bateas = ({ batea }) => {
+const Info_Bateas = ({ batea }) => {
     return (
       <Box
             sx={{
@@ -143,8 +174,6 @@ const MatrizSectores = ({ batea, bateaData, onlyvisual }) => {
 
     )
   }
-  
-
 
 
 const Visualizar_Batea = ({ batea, onlyvisual }) => {
@@ -162,29 +191,28 @@ const Visualizar_Batea = ({ batea, onlyvisual }) => {
                 setBateaData(response.data);
             } catch (error) {
                 console.error(error.message);
-                
             }
             setLoading(false);
-
-            
         }
 
         fetchBateaData();
-    }, [batea]);
+    }
+    , [batea]);
 
     return (
         <div>
             {loading && <p>Cargando...</p>}
             <Info_Bateas batea={batea} />
 
-            {/*Ahora ponemos la informacion de los sectores*/}
-
+            {/* Ahora ponemos la informacion de los sectores */}
             <div>
                 <MatrizSectores batea={batea} bateaData={bateaData} onlyvisual={onlyvisual} />
             </div>
         </div>
     );
 }
+
+
 
 export default Visualizar_Batea;
 export { Info_Bateas };
