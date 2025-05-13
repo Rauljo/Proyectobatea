@@ -16,15 +16,17 @@ CREATE TABLE sectores(
 	x int,
 	y int,
 	batea int,
-	cuerdas_cria int default 0,
-	cuerdas_cultivo int default 0,
+	cuerdas_pesca int default 0,
+	cuerdas_piedra int default 0,
+	cuerdas_desdoble int default 0,
+	cuerdas_comercial int default 0,
 	primary key (x,y,batea),
 	foreign key(batea) references bateas(id)
 );
 
 create table movimientos (
 	id serial primary key,
-	tipo_cuerda varchar(10) check (tipo_cuerda in ('cria', 'cultivo')),
+	tipo_cuerda varchar(10) check (tipo_cuerda in ('pesca', 'piedra', 'desdoble', 'comercial')),
 	cantidad int,
 	operacion varchar(10) check (operacion in ('entrada', 'salida')),
 	sector_x int,
@@ -37,28 +39,41 @@ create table movimientos (
 create or replace function actualizar_cuerdas_after_insert()
 returns trigger as $$
 begin
-	-- if insert, sum
-	if new.operacion = 'entrada' then
-		if new.tipo_cuerda = 'cria' then
-			update sectores set cuerdas_cria = cuerdas_cria + new.cantidad
-			where x = new.sector_x and y = new.sector_y and batea = new.sector_batea;
-		elsif new.tipo_cuerda = 'cultivo' then
-			update sectores set cuerdas_cultivo = cuerdas_cultivo + new.cantidad
-			where x = new.sector_x and y = new.sector_y and batea = new.sector_batea;
-		end if;
-	-- if delete, substract
-	elsif new.operacion = 'salida' then
-		if new.tipo_cuerda = 'cria' then
-			update sectores set cuerdas_cria = cuerdas_cria - new.cantidad
-			where x = new.sector_x and y = new.sector_y and batea = new.sector_batea;
-		elsif new.tipo_cuerda = 'cultivo' then
-			update sectores set cuerdas_cultivo = cuerdas_cultivo - new.cantidad
-			where x = new.sector_x and y = new.sector_y and batea = new.sector_batea;
-		end if;
-	end if;
-	return new;
+    if new.operacion = 'entrada' then
+        if new.tipo_cuerda = 'pesca' then
+            update sectores set cuerdas_pesca = cuerdas_pesca + new.cantidad
+            where x = new.sector_x and y = new.sector_y and batea = new.sector_batea;
+        elsif new.tipo_cuerda = 'piedra' then
+            update sectores set cuerdas_piedra = cuerdas_piedra + new.cantidad
+            where x = new.sector_x and y = new.sector_y and batea = new.sector_batea;
+        elsif new.tipo_cuerda = 'desdoble' then
+            update sectores set cuerdas_desdoble = cuerdas_desdoble + new.cantidad
+            where x = new.sector_x and y = new.sector_y and batea = new.sector_batea;
+        elsif new.tipo_cuerda = 'comercial' then
+            update sectores set cuerdas_comercial = cuerdas_comercial + new.cantidad
+            where x = new.sector_x and y = new.sector_y and batea = new.sector_batea;
+        end if;
+
+    elsif new.operacion = 'salida' then
+        if new.tipo_cuerda = 'pesca' then
+            update sectores set cuerdas_pesca = cuerdas_pesca - new.cantidad
+            where x = new.sector_x and y = new.sector_y and batea = new.sector_batea;
+        elsif new.tipo_cuerda = 'piedra' then
+            update sectores set cuerdas_piedra = cuerdas_piedra - new.cantidad
+            where x = new.sector_x and y = new.sector_y and batea = new.sector_batea;
+        elsif new.tipo_cuerda = 'desdoble' then
+            update sectores set cuerdas_desdoble = cuerdas_desdoble - new.cantidad
+            where x = new.sector_x and y = new.sector_y and batea = new.sector_batea;
+        elsif new.tipo_cuerda = 'comercial' then
+            update sectores set cuerdas_comercial = cuerdas_comercial - new.cantidad
+            where x = new.sector_x and y = new.sector_y and batea = new.sector_batea;
+        end if;
+    end if;
+
+    return new;
 end;
-$$language plpgsql;
+$$ language plpgsql;
+
 
 create trigger actualizar_cuerdas_after_insert_trigger
 after insert on movimientos 
