@@ -28,12 +28,12 @@ const MatrizSectores = ({ batea, bateaData }) => {
             <Box
               key={`${x}-${y}`}
               sx={{
-                width: `${cellSize}px`,
-                height: `${cellSize}px`,
+                //width: `${cellSize}px`,
+                //height: `${cellSize}px`,
                 backgroundColor: '#e0e0e0',
                 borderRadius: '8px',
                 textAlign: 'center',
-                padding: '4px',
+                padding: '8px',
                 fontSize: '12px',
                 display: 'flex',
                 flexDirection: 'column',
@@ -45,16 +45,30 @@ const MatrizSectores = ({ batea, bateaData }) => {
               <Typography variant="body2" fontWeight="bold">
                 {x+1} - {y+1}
               </Typography>
-              {sector ? (
+              {sector &&
+                (sector.cuerdas_pesca > 0 ||
+                sector.cuerdas_piedra > 0 ||
+                sector.cuerdas_desdoble > 0 ||
+                sector.cuerdas_comercial > 0) ? (
                 <>
-                  <Typography variant="caption">Cría: {sector.cuerdas_cria}</Typography>
-                  <Typography variant="caption">Cultivo: {sector.cuerdas_cultivo}</Typography>
+                    {sector.cuerdas_pesca > 0 && (
+                    <Typography variant="caption">Pesca: {sector.cuerdas_pesca}</Typography>
+                    )}
+                    {sector.cuerdas_piedra > 0 && (
+                    <Typography variant="caption">Piedra: {sector.cuerdas_piedra}</Typography>
+                    )}
+                    {sector.cuerdas_desdoble > 0 && (
+                    <Typography variant="caption">Desd.: {sector.cuerdas_desdoble}</Typography>
+                    )}
+                    {sector.cuerdas_comercial > 0 && (
+                    <Typography variant="caption">Com.: {sector.cuerdas_comercial}</Typography>
+                    )}
                 </>
-              ) : (
+                ) : (
                 <Typography variant="caption" color="text.secondary">
-                  Sin datos
+                    
                 </Typography>
-              )}
+                )}
             </Box>
           );
         })

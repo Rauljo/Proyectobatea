@@ -7,46 +7,31 @@ import {
     Typography,
     Card,
     CardContent,
-    Grid
+    Grid,
+    MenuItem,
+    Select,
+    FormControl,
+    InputLabel
 } from '@mui/material';
 import axios from 'axios';
 
-
 const Insertion_Form = ({ batea, selectedCell, sectores, onManualCellSelect, onSectorUpdate }) => {
     const [movementType, setMovementType] = useState('entrada');
-    const [criaChange, setCriaChange] = useState('');
-    const [cultivoChange, setCultivoChange] = useState('');
+    const [selectedCuerdaType, setSelectedCuerdaType] = useState('');
+    const [cantidad, setCantidad] = useState('');
     const [rowInput, setRowInput] = useState('');
     const [colInput, setColInput] = useState('');
-    const [criaCurrent, setCriaCurrent] = useState(0);
-    const [cultivoCurrent, setCultivoCurrent] = useState(0);
 
-    // Sincronizar los inputs con la selección de celda actual
+    // Sincronizar inputs con la celda seleccionada
     useEffect(() => {
         if (selectedCell) {
-            setRowInput(selectedCell[0] + 1); // Convertimos de índice a número
-            setColInput(selectedCell[1] + 1); // Convertimos de índice a número
-            updateCuerdaValues(selectedCell);
+            setRowInput(selectedCell[0] + 1);
+            setColInput(selectedCell[1] + 1);
         } else {
             setRowInput('');
             setColInput('');
-            setCriaCurrent(0);
-            setCultivoCurrent(0);
         }
     }, [selectedCell]);
-
-    // Buscar la información del sector seleccionado en sectores
-    const updateCuerdaValues = (cell) => {
-        if (cell) {
-            const sector = sectores.find(
-                (sector) => sector.x === cell[0] && sector.y === cell[1]
-            );
-            if (sector) {
-                setCriaCurrent(sector.cuerdas_cria);
-                setCultivoCurrent(sector.cuerdas_cultivo);
-            }
-        }
-    };
 
     const handleRowChange = (e) => {
         setRowInput(e.target.value);
@@ -59,79 +44,46 @@ const Insertion_Form = ({ batea, selectedCell, sectores, onManualCellSelect, onS
     };
 
     const updateSelectedCell = (row, col) => {
-        if (row && col) {
-            const rowNum = parseInt(row) - 1; // Convertimos de número a índice
-            const colNum = parseInt(col) - 1; // Convertimos de número a índice
-            if (!isNaN(rowNum) && !isNaN(colNum)) {
-                onManualCellSelect([rowNum, colNum]);
-            }
+        const rowNum = parseInt(row) - 1;
+        const colNum = parseInt(col) - 1;
+        if (!isNaN(rowNum) && !isNaN(colNum)) {
+            onManualCellSelect([rowNum, colNum]);
         }
     };
 
     const handleSubmit = async () => {
-        console.log("Enviado movimiento con los siguientes datos:");
-        if (!selectedCell) return;
+        if (!selectedCell || !selectedCuerdaType || !cantidad) return;
 
-    const [x, y] = selectedCell;
-    const bateaId = batea.id;
+        const [x, y] = selectedCell;
+        const bateaId = batea.id;
 
-    try {
-        let newCria = criaCurrent;
-        let newCultivo = cultivoCurrent;
-
-        // Movimiento de cría (si se ha introducido un valor)
-        if (criaChange !== '' && criaChange !== '0') {
-            const cantidad = parseInt(criaChange);
-            const responseCria = await axios.post('http://localhost:5010/movimientos', {
+        try {
+            const cantidadParsed = parseInt(cantidad);
+            const response = await axios.post('http://localhost:5010/movimientos', {
                 x,
                 y,
                 batea: bateaId,
-                tipo_cuerda: 'cria',
-                cantidad,
+                tipo_cuerda: selectedCuerdaType,
+                cantidad: cantidadParsed,
                 tipo_operacion: movementType
             });
-            console.log('Movimiento de cría enviado:', responseCria.data);
 
-            //Actualizo el valor local
-            newCria = movementType === 'entrada' ? criaCurrent + cantidad : criaCurrent - cantidad;
-            setCriaCurrent(newCria);
+            console.log('Movimiento enviado:', response.data);
+
+            // Llamar callback si se proporciona
+            if (onSectorUpdate) {
+                // Esta parte dependerá de cómo quieras actualizarlo. Aquí no se actualiza el valor local directamente.
+                onSectorUpdate(x, y); 
+            }
+
+            // Limpiar campos
+            setCantidad('');
+            setSelectedCuerdaType('');
+
+        } catch (error) {
+            console.error('Error al enviar el movimiento:', error);
         }
-
-        // Movimiento de cultivo (si se ha introducido un valor)
-        if (cultivoChange !== '' && cultivoChange !== '0') {
-            const cantidad = parseInt(cultivoChange);
-            const responseCultivo = await axios.post('http://localhost:5010/movimientos', {
-                x,
-                y,
-                batea: bateaId,
-                tipo_cuerda: 'cultivo',
-                cantidad,
-                tipo_operacion: movementType
-            });
-            console.log('Movimiento de cultivo enviado:', responseCultivo.data);
-
-            //Actualizo el valor local
-            newCultivo = movementType === 'entrada' ? cultivoCurrent + cantidad : cultivoCurrent - cantidad;
-            setCultivoCurrent(newCultivo);
-        }
-
-        if (onSectorUpdate) {
-            onSectorUpdate(x, y, {
-              cuerdas_cria: newCria,
-              cuerdas_cultivo: newCultivo
-            });
-          }
-
-        setCriaChange('');
-        setCultivoChange('');
-
-        // Puedes mostrar un mensaje de éxito aquí
-    } catch (error) {
-        console.error('Error al enviar el movimiento:', error);
-        // También puedes mostrar un mensaje de error en pantalla si quieres
-    }
     };
-    
 
     return (
         <Card sx={{ width: 400 }}>
@@ -146,23 +98,21 @@ const Insertion_Form = ({ batea, selectedCell, sectores, onManualCellSelect, onS
 
                 <Grid container spacing={2}>
                     <Grid item xs={6}>
-                        <TextField //TODO: Limitar a 0 y al número máximo de filas
+                        <TextField
                             label="Fila"
                             fullWidth
                             value={rowInput}
                             onChange={handleRowChange}
                             type="number"
-                            placeholder="Fila"
                         />
                     </Grid>
                     <Grid item xs={6}>
-                        <TextField //TODO: Limitar a 0 y al número máximo de columnas
+                        <TextField
                             label="Columna"
                             fullWidth
                             value={colInput}
                             onChange={handleColChange}
                             type="number"
-                            placeholder="Columna"
                         />
                     </Grid>
                 </Grid>
@@ -183,44 +133,29 @@ const Insertion_Form = ({ batea, selectedCell, sectores, onManualCellSelect, onS
                     <ToggleButton value="salida">Salida</ToggleButton>
                 </ToggleButtonGroup>
 
-                <Grid container spacing={2}>
-                    <Grid item xs={6}>
-                        <Card variant="outlined">
-                            <CardContent>
-                                <Typography variant="subtitle2">Cuerda de Cría</Typography>
-                                <Typography variant="body2">Actualmente: {criaCurrent}</Typography>
-                                <TextField
-                                    label="Cambio"
-                                    type="number"
-                                    size="small"
-                                    fullWidth
-                                    margin="dense"
-                                    value={criaChange}
-                                    onChange={(e) => setCriaChange(e.target.value)}
-                                    inputProps={{ min: 0 }} //TODO: Quitar el deprecated
-                                />
-                            </CardContent>
-                        </Card>
-                    </Grid>
-                    <Grid item xs={6}>
-                        <Card variant="outlined">
-                            <CardContent>
-                                <Typography variant="subtitle2">Cuerda de Cultivo</Typography>
-                                <Typography variant="body2">Actualmente: {cultivoCurrent}</Typography>
-                                <TextField
-                                    label="Cambio"
-                                    type="number"
-                                    size="small"
-                                    fullWidth
-                                    margin="dense"
-                                    value={cultivoChange}
-                                    onChange={(e) => setCultivoChange(e.target.value)}
-                                    inputProps={{ min: 0 }} //TODO: Quitar el deprecated
-                                />
-                            </CardContent>
-                        </Card>
-                    </Grid>
-                </Grid>
+                <FormControl fullWidth sx={{ mt: 2 }}>
+                    <InputLabel>Tipo de Cuerda</InputLabel>
+                    <Select
+                        value={selectedCuerdaType}
+                        label="Tipo de Cuerda"
+                        onChange={(e) => setSelectedCuerdaType(e.target.value)}
+                    >
+                        <MenuItem value="pesca">Pesca</MenuItem>
+                        <MenuItem value="piedra">Piedra</MenuItem>
+                        <MenuItem value="desdoble">Desdoble</MenuItem>
+                        <MenuItem value="comercial">Comercial</MenuItem>
+                    </Select>
+                </FormControl>
+
+                <TextField
+                    label="Cantidad"
+                    type="number"
+                    fullWidth
+                    sx={{ mt: 2 }}
+                    value={cantidad}
+                    onChange={(e) => setCantidad(e.target.value)}
+                    inputProps={{ min: 0 }}
+                />
 
                 <Button
                     variant="contained"
@@ -228,7 +163,7 @@ const Insertion_Form = ({ batea, selectedCell, sectores, onManualCellSelect, onS
                     fullWidth
                     sx={{ mt: 3 }}
                     onClick={handleSubmit}
-                    disabled={!selectedCell}
+                    disabled={!selectedCell || !selectedCuerdaType || !cantidad}
                 >
                     Enviar Movimiento
                 </Button>
