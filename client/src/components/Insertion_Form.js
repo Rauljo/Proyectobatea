@@ -71,16 +71,6 @@ const Insertion_Form = ({ batea, selectedCell, sectores, onManualCellSelect, onS
         const bateaId = batea.id;
         const cantidadParsed = parseInt(cantidad);
 
-        console.log('Enviando movimiento:', {
-            x,
-            y,
-            bateaId,
-            selectedCuerdaType,
-            cantidadParsed,
-            movementType,
-            destino
-        });
-
         try {
 
 
@@ -95,8 +85,9 @@ const Insertion_Form = ({ batea, selectedCell, sectores, onManualCellSelect, onS
 
             if (movementType === 'intercambio' && destino) {
                 payload.tipo_operacion = 'salida';
+                payload.nota = `Intercambio con Batea ${destino.bateaId} en (${destino.x + 1}, ${destino.y + 1})`;
             };
-
+            console.log('Payload:', payload);
             // Enviar movimiento base
             const response = await axios.post('http://localhost:5010/movimientos', payload);
             console.log('Movimiento enviado:', response.data);
@@ -107,6 +98,7 @@ const Insertion_Form = ({ batea, selectedCell, sectores, onManualCellSelect, onS
                 payload.y = destino.y;
                 payload.batea = destino.bateaId;
                 payload.tipo_operacion = 'entrada';
+                payload.nota = `Intercambio con Batea ${bateaId} en (${x + 1}, ${y + 1})`;
 
                 const response = await axios.post('http://localhost:5010/movimientos', payload);
                 console.log('Movimiento de entrada enviado:', response.data);
