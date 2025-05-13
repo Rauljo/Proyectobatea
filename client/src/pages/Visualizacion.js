@@ -1,6 +1,8 @@
 import React from 'react';
 import { useState } from 'react';
 import Grid from '@mui/material/Grid2';
+import { Box } from '@mui/material'; // Asegúrate de importar Box
+
 
 
 import Selector_Menu from '../components/Selector_Menu';
@@ -17,19 +19,42 @@ const Visualizacion = () => {
 
     return (
         <div>
-            <h1>Visualización</h1>
-            <Selector_Menu onSelectBatea={handleSelectBatea}/>
+            <Box
+                sx={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    gap: 4,
+                    marginTop: '80px',
+                }}
+            >
+                <Selector_Menu onSelectBatea={handleSelectBatea} />
+            </Box>
             {selectedBatea && (
-                <div>
-                    <Grid container spacing={2}>
-                        <Grid item size="auto" sx={{ display: "flex", justifyContent: "center" }}>
-                            <Visualizar_Batea batea={selectedBatea} onlyvisual="1" />
-                        </Grid>
-                        <Grid item size="auto" sx={{ display: "flex", justifyContent: "center" }}>
-                            <Visualizar_Movimientos batea={selectedBatea} />
-                        </Grid>
+                <Box
+                    sx={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    marginTop: 4,
+                    }}
+                >
+                    <Grid
+                    container
+                    spacing={10}
+                    sx={{
+                        justifyContent: 'center', // centra los Grid items dentro del container
+                        //maxWidth: '1200px',        // opcional: limita el ancho
+                    }}
+                    >
+                    <Grid item>
+                        <Visualizar_Batea batea={selectedBatea} onlyvisual="1" />
                     </Grid>
-                </div>)}
+                    <Grid item>
+                        <Visualizar_Movimientos batea={selectedBatea} />
+                    </Grid>
+                    </Grid>
+                </Box>
+                )}
         </div>
     );
 }
