@@ -5,7 +5,7 @@ import axios from "axios";
 import { Autocomplete, TextField, CircularProgress } from "@mui/material";
 
 
-const Selector_Menu = ({ onSelectBatea }) => {
+const Selector_Menu = ({ onSelectBatea, onChangeOptions }) => {
 
     const [options, setOptions] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -18,6 +18,7 @@ const Selector_Menu = ({ onSelectBatea }) => {
             try {
                 const response = await axios.get("http://localhost:5010/bateas");
                 setOptions(response.data);
+                if (onChangeOptions) onChangeOptions(response.data); // Actualiza las opciones en el componente padre
             } catch (error) {
                 console.error(error.message);
                 

@@ -21,6 +21,8 @@ const Data_Insertion = () => {
     const [bateaData, setBateaData] = useState(null);
     const [loading, setLoading] = useState(false);
 
+    const [bateas, setBateas] = useState([]); // Estado para almacenar las bateas
+
 
     const handleSelectBatea = (batea) => {
         setSelected(batea);
@@ -73,7 +75,7 @@ const Data_Insertion = () => {
                     marginTop: '80px',
                 }}
             >
-                <Selector_Menu onSelectBatea={handleSelectBatea} />
+                <Selector_Menu onSelectBatea={handleSelectBatea} onChangeOptions={(bateasCargadas => setBateas(bateasCargadas))}/>
                 <Nueva_Batea />
             </Box>
 
@@ -126,11 +128,12 @@ const Data_Insertion = () => {
                             }}
                         >
                             <Insertion_Form
-                            batea={selectedBatea}
-                            selectedCell={selectedCell}
-                            sectores={bateaData}
-                            onManualCellSelect={handleManualCellSelect}
-                            onSectorUpdate={handleSectorUpdate}
+                                bateas={bateas}
+                                batea={selectedBatea}
+                                selectedCell={selectedCell}
+                                sectores={bateaData}
+                                onManualCellSelect={handleManualCellSelect}
+                                onSectorUpdate={handleSectorUpdate}
                             />
                         </Box>
                         </Grid>

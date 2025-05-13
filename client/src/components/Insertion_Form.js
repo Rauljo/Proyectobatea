@@ -11,7 +11,8 @@ import {
     MenuItem,
     Select,
     FormControl,
-    InputLabel
+    InputLabel,
+    Autocomplete
 } from '@mui/material';
 import {
   Dialog,
@@ -24,7 +25,9 @@ import CloseIcon from '@mui/icons-material/Close';
 
 import axios from 'axios';
 
-const Insertion_Form = ({ batea, selectedCell, sectores, onManualCellSelect, onSectorUpdate }) => {
+import Esquema_Batea from './Esquema_Batea';
+
+const Insertion_Form = ({ bateas, batea, selectedCell, sectores, onManualCellSelect, onSectorUpdate }) => {
     const [movementType, setMovementType] = useState('entrada');
     const [selectedCuerdaType, setSelectedCuerdaType] = useState('');
     const [cantidad, setCantidad] = useState('');
@@ -35,6 +38,8 @@ const Insertion_Form = ({ batea, selectedCell, sectores, onManualCellSelect, onS
     const [destinoBateaId, setDestinoBateaId] = useState('');
     const [destinoRow, setDestinoRow] = useState('');
     const [destinoCol, setDestinoCol] = useState('');
+    const [bateaDestino, setBateaDestino] = useState(null);
+
 
 
     // Sincronizar inputs con la celda seleccionada
@@ -215,7 +220,7 @@ const Insertion_Form = ({ batea, selectedCell, sectores, onManualCellSelect, onS
                     Enviar Movimiento
                 </Button>
             </CardContent>
-            <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} fullWidth>
+            <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} fullWidth maxWidth='md'>
                 <DialogTitle>
                     Indicar destino del intercambio
                     <IconButton
@@ -228,13 +233,26 @@ const Insertion_Form = ({ batea, selectedCell, sectores, onManualCellSelect, onS
                 </DialogTitle>
                 <DialogContent dividers>
                     <FormControl fullWidth sx={{ mt: 2 }}>
-                        <TextField
-                            fullWidth
-                            label="Batea Destino (ID)"
-                            type="text"
-                            sx={{ mt: 2 }}
-                            value={destinoBateaId}
-                            onChange={(e) => setDestinoBateaId(e.target.value)}
+                        <Autocomplete
+                            options={bateas}
+                            getOptionLabel={(option) => option.name}
+                            onChange={(event, newValue) => {
+                                if (newValue) {
+                                    setDestinoBateaId(newValue.id);
+                                    setBateaDestino(newValue); // guardamos la batea completa
+                                } else {
+                                    setDestinoBateaId('');
+                                    setBateaDestino(null);
+                                }
+                            }}
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    label="Batea destino"
+                                    sx={{ mt: 2 }}
+                                />
+                            )}
+                            isOptionEqualToValue={(option, value) => option.id === value.id}
                         />
                     </FormControl>
                     <Grid container spacing={2} sx={{ mt: 1 }}>
@@ -244,7 +262,7 @@ const Insertion_Form = ({ batea, selectedCell, sectores, onManualCellSelect, onS
                                 type="number"
                                 fullWidth
                                 value={destinoRow}
-                                onChange={(e) => setDestinoRow(e.target.value)}
+                                onChange={(e) => setDestinoRow((e.target.value))}
                             />
                         </Grid>
                         <Grid item xs={6}>
@@ -253,8 +271,32 @@ const Insertion_Form = ({ batea, selectedCell, sectores, onManualCellSelect, onS
                                 type="number"
                                 fullWidth
                                 value={destinoCol}
-                                onChange={(e) => setDestinoCol(e.target.value)}
+                                onChange={(e) => setDestinoCol((e.target.value))}
                             />
+                        </Grid>
+                        <Grid
+                            container
+                            justifyContent="center"   // Centra horizontalmente
+                            alignItems="center"        // Centra verticalmente
+                            sx={{ mt: 1 }}
+                        >
+                            <Grid item>
+                                {bateaDestino && (
+                                    <Esquema_Batea
+                                        batea={bateaDestino}
+                                        selectedCell={[destinoRow, destinoCol]}
+                                        onCellSelect={(newCell) => {
+                                            if (newCell) {
+                                                setDestinoRow(newCell[0]);
+                                                setDestinoCol(newCell[1]);
+                                            } else {
+                                                setDestinoRow('');
+                                                setDestinoCol('');
+                                            }
+                                        }}
+                                    />
+                                )}
+                            </Grid>
                         </Grid>
                     </Grid>
                 </DialogContent>
