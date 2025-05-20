@@ -132,17 +132,44 @@ app.get("/bateas/:id", async (req, res) => {
     }
 });
 
-//Get batea movements
 app.get("/movimientos/:id", async (req, res) => {
     try {
+        
         const { id } = req.params;
-        const movimientos = await pool.query("SELECT * FROM movimientos WHERE sector_batea = $1", [id]);
+        const { vigencia } = req.query;
+
+        if (vigencia === 'true') {
+            queryText = `
+                SELECT id, fecha, tipo_cuerda, cantidad, operacion, vigente, sector_x, sector_y, sector_batea, fecha_previa, nota, 
+                CASE
+                    WHEN operacion = 'entrada' THEN
+                        CASE
+                            WHEN vigente = true THEN now() - COALESCE(fecha_previa, fecha)
+                            ELSE vigencia
+                        END
+                    ELSE vigencia
+                END AS vigencia
+                FROM movimientos WHERE sector_batea = $1
+                ORDER BY fecha DESC, id DESC;
+                `;
+                queryParams = [id];
+        }
+        else {
+            queryText = `
+                SELECT * FROM movimientos WHERE sector_batea = $1
+                ORDER BY fecha DESC, id DESC
+                `;
+                queryParams = [id];
+        }
+
+        const movimientos = await pool.query(queryText, queryParams);
         res.json(movimientos.rows);
-    } catch (err) {
+    }
+    catch (err) {
         console.error(err.message);
     }
-});
-
+}
+);
 
 app.listen(5010, () => {
     console.log('Server is running on port 5010');
