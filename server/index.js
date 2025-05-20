@@ -171,6 +171,25 @@ app.get("/movimientos/:id", async (req, res) => {
 }
 );
 
+//Get x alerts
+app.get("/alerts/:limit", async (req, res) => {
+    try {
+        const { limit } = req.params;
+        const alerts = await pool.query(`
+            SELECT b.name, m.id, tipo_cuerda, cantidad, operacion, vigente, sector_x, sector_y, fecha, fecha_previa, nota, vigente, now() - COALESCE(fecha_previa, fecha) as vigencia
+            FROM movimientos m join bateas b on m.sector_batea = b.id
+            WHERE m.vigente = true
+            ORDER BY vigencia DESC, id DESC
+            LIMIT $1`,[limit]);
+        
+        res.json(alerts.rows);
+    } catch (err) {
+        console.error(err.message);
+    }
+}
+);
+    
+
 app.listen(5010, () => {
     console.log('Server is running on port 5010');
 });
