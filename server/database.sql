@@ -35,78 +35,126 @@ create table movimientos (
 	fecha timestamp default current_timestamp,
     fecha_previa timestamp default null,
     nota varchar(255) default '',
+    vigente bool default null,
+    vigencia interval default null,
 	foreign key(sector_x, sector_y, sector_batea) references sectores(x,y,batea)
 );
 
-create or replace function actualizar_cuerdas_after_insert()
-returns trigger as $$
+CREATE OR REPLACE FUNCTION establecer_vigencia() RETURNS TRIGGER AS $$
 begin
-    if new.operacion = 'entrada' then
-        if new.tipo_cuerda = 'pesca' then
-            update sectores set cuerdas_pesca = cuerdas_pesca + new.cantidad
-            where x = new.sector_x and y = new.sector_y and batea = new.sector_batea;
-        elsif new.tipo_cuerda = 'piedra' then
-            update sectores set cuerdas_piedra = cuerdas_piedra + new.cantidad
-            where x = new.sector_x and y = new.sector_y and batea = new.sector_batea;
-        elsif new.tipo_cuerda = 'desdoble' then
-            update sectores set cuerdas_desdoble = cuerdas_desdoble + new.cantidad
-            where x = new.sector_x and y = new.sector_y and batea = new.sector_batea;
-        elsif new.tipo_cuerda = 'comercial' then
-            update sectores set cuerdas_comercial = cuerdas_comercial + new.cantidad
-            where x = new.sector_x and y = new.sector_y and batea = new.sector_batea;
+    if (new.operacion = 'entrada') then
+        new.vigente = true;
+    end if;
+    return new;
+end;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER establecer_vigencia_trigger
+before insert on movimientos
+for each row
+execute function establecer_vigencia();
+
+create or replace function actualizar_cuerdas(new_mov movimientos) returns integer as $$
+declare
+    nuevo_valor INTEGER;
+begin
+    if new_mov.operacion = 'entrada' then
+        if new_mov.tipo_cuerda = 'pesca' then
+            update sectores set cuerdas_pesca = cuerdas_pesca + new_mov.cantidad
+            where x = new_mov.sector_x and y = new_mov.sector_y and batea = new_mov.sector_batea
+            returning cuerdas_pesca into nuevo_valor;
+        elsif new_mov.tipo_cuerda = 'piedra' then
+            update sectores set cuerdas_piedra = cuerdas_piedra + new_mov.cantidad
+            where x = new_mov.sector_x and y = new_mov.sector_y and batea = new_mov.sector_batea
+            returning cuerdas_piedra into nuevo_valor;
+        elsif new_mov.tipo_cuerda = 'desdoble' then
+            update sectores set cuerdas_desdoble = cuerdas_desdoble + new_mov.cantidad
+            where x = new_mov.sector_x and y = new_mov.sector_y and batea = new_mov.sector_batea
+            returning cuerdas_desdoble into nuevo_valor;
+        elsif new_mov.tipo_cuerda = 'comercial' then
+            update sectores set cuerdas_comercial = cuerdas_comercial + new_mov.cantidad
+            where x = new_mov.sector_x and y = new_mov.sector_y and batea = new_mov.sector_batea
+            returning cuerdas_comercial into nuevo_valor;
         end if;
 
-    elsif new.operacion = 'salida' then
-        if new.tipo_cuerda = 'pesca' then
-            update sectores set cuerdas_pesca = cuerdas_pesca - new.cantidad
-            where x = new.sector_x and y = new.sector_y and batea = new.sector_batea;
-        elsif new.tipo_cuerda = 'piedra' then
-            update sectores set cuerdas_piedra = cuerdas_piedra - new.cantidad
-            where x = new.sector_x and y = new.sector_y and batea = new.sector_batea;
-        elsif new.tipo_cuerda = 'desdoble' then
-            update sectores set cuerdas_desdoble = cuerdas_desdoble - new.cantidad
-            where x = new.sector_x and y = new.sector_y and batea = new.sector_batea;
-        elsif new.tipo_cuerda = 'comercial' then
-            update sectores set cuerdas_comercial = cuerdas_comercial - new.cantidad
-            where x = new.sector_x and y = new.sector_y and batea = new.sector_batea;
+    elsif new_mov.operacion = 'salida' then
+        if new_mov.tipo_cuerda = 'pesca' then
+            update sectores set cuerdas_pesca = cuerdas_pesca - new_mov.cantidad
+            where x = new_mov.sector_x and y = new_mov.sector_y and batea = new_mov.sector_batea
+            returning cuerdas_pesca into nuevo_valor;
+        elsif new_mov.tipo_cuerda = 'piedra' then
+            update sectores set cuerdas_piedra = cuerdas_piedra - new_mov.cantidad
+            where x = new_mov.sector_x and y = new_mov.sector_y and batea = new_mov.sector_batea
+            returning cuerdas_piedra into nuevo_valor;
+        elsif new_mov.tipo_cuerda = 'desdoble' then
+            update sectores set cuerdas_desdoble = cuerdas_desdoble - new_mov.cantidad
+            where x = new_mov.sector_x and y = new_mov.sector_y and batea = new_mov.sector_batea
+            returning cuerdas_desdoble into nuevo_valor;
+        elsif new_mov.tipo_cuerda = 'comercial' then
+            update sectores set cuerdas_comercial = cuerdas_comercial - new_mov.cantidad
+            where x = new_mov.sector_x and y = new_mov.sector_y and batea = new_mov.sector_batea
+            returning cuerdas_comercial into nuevo_valor;
         end if;
+    end if;
+        
+
+    return nuevo_valor;
+end;
+$$ language plpgsql;
+
+
+
+create or replace function actualizar_vigencia(new_mov movimientos, nuevo_valor integer) returns void as $$
+declare
+    entrada RECORD;
+begin
+    INSERT INTO debug_log (context) VALUES ('new_mov: ' || new_mov.tipo_cuerda::text);
+
+    for entrada in 
+        select *
+        from movimientos m
+        where m.vigente = true and m.sector_x = new_mov.sector_x and m.sector_y = new_mov.sector_y and m.sector_batea = new_mov.sector_batea and m.tipo_cuerda = new_mov.tipo_cuerda
+        order by fecha desc, id desc
+    loop
+
+        INSERT INTO debug_log (context) VALUES ('entrada: ' || entrada::text);
+
+        -- Restamos a la cantidad actual lo que aporto ese movimiento
+        nuevo_valor := nuevo_valor - entrada.cantidad;
+
+        -- Si lo que aporto ese movimiento es 0 o menos, entonces ya no estara vigente
+        if nuevo_valor <= 0 and -nuevo_valor >= entrada.cantidad then
+            update movimientos
+            set vigente = FALSE,
+                vigencia = (now() - COALESCE(fecha_previa, fecha))
+            where id = entrada.id and tipo_cuerda = entrada.tipo_cuerda;
+        end if;
+
+    end loop;
+end;
+$$ language plpgsql;
+
+
+create or replace function trigger_post_insert_movimientos() returns trigger as $$
+declare
+    nuevo_valor INTEGER;
+begin
+    -- 1. Actualizar cuerdas y recoger el nuevo valor
+    nuevo_valor := actualizar_cuerdas(NEW);
+
+    --2. Si es una salida, recalcular vigencia
+    if new.operacion = 'salida' then
+        perform actualizar_vigencia(new, nuevo_valor);
     end if;
 
     return new;
 end;
 $$ language plpgsql;
 
-
-create trigger actualizar_cuerdas_after_insert_trigger
-after insert on movimientos 
+create trigger trigger_post_insert_movimientos
+after insert on movimientos
 for each row
-execute function actualizar_cuerdas_after_insert();
+execute function trigger_post_insert_movimientos();
+    
 
-
-
-insert into bateas (name, polygon, x_sector, y_sector) values ('Frangarbe', 'Arousa', 2, 3);
-
-insert into sectores (x, y, batea, cuerdas_cria, cuerdas_cultivo) values (0,0,1,10,10);
-insert into sectores (x, y, batea, cuerdas_cria, cuerdas_cultivo) values (0,1,1,12,10);
-insert into sectores (x, y, batea, cuerdas_cria, cuerdas_cultivo) values (0,2,1,40,20);
-insert into sectores (x, y, batea, cuerdas_cria, cuerdas_cultivo) values (1,0,1,20,30);
-insert into sectores (x, y, batea, cuerdas_cria, cuerdas_cultivo) values (1,1,1,30,40);
-insert into sectores (x, y, batea, cuerdas_cria, cuerdas_cultivo) values (1,2,1,20,50);
-
-select * from sectores where batea=1
-select * from movimientos
---insert
-insert into movimientos (id, tipo_cuerda, cantidad, operacion, sector_x, sector_y, sector_batea) values (1, 'cria', 10, 'entrada', 0, 0, 1);
-insert into movimientos (id, tipo_cuerda, cantidad, operacion, sector_x, sector_y, sector_batea) values (2, 'cultivo', 10, 'entrada', 0, 0, 1);
-
---delete
-insert into movimientos (id, tipo_cuerda, cantidad, operacion, sector_x, sector_y, sector_batea) values (3, 'cria', 5, 'salida', 0, 0, 1);
-insert into movimientos (id, tipo_cuerda, cantidad, operacion, sector_x, sector_y, sector_batea) values (4, 'cultivo', 5, 'salida', 0, 0, 1);
-
-
-insert into bateas (name, polygon, x_sector, y_sector) values ('Indemosa I', 'Arousa', 3, 2);
-insert into bateas (name, polygon, x_sector, y_sector) values ('Luisa IV', 'Cambados', 4, 4);
-
-select * from bateas;
-
-select * from sectores where batea=6;
+		
