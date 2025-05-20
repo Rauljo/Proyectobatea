@@ -12,10 +12,26 @@ import Visualizar_Movimientos from '../components/Visualizar_Movimientos';
 
 const Visualizacion = () => {
     const [selectedBatea, setSelected] = React.useState(null);
-    
-        const handleSelectBatea = (batea) => {
-            setSelected(batea);
+
+    const [bateas, setBateas] = useState([]);
+
+    React.useEffect(() => {
+        const fetchBateas = async () => {
+            try {
+                const response = await fetch('http://localhost:5010/bateas');
+                const data = await response.json();
+                setBateas(data);
+            } catch (error) {
+                console.error("Error fetching bateas:", error.message);
+            }
         };
+
+        fetchBateas();
+    }, []);
+    
+    const handleSelectBatea = (batea) => {
+        setSelected(batea);
+    };
 
     return (
         <div>
@@ -28,7 +44,7 @@ const Visualizacion = () => {
                     marginTop: '80px',
                 }}
             >
-                <Selector_Menu onSelectBatea={handleSelectBatea} />
+                <Selector_Menu onSelectBatea={handleSelectBatea} bateas={bateas}/>
             </Box>
             {selectedBatea && (
                 <Box

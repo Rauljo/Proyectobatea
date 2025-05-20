@@ -22,9 +22,11 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
+import Selector_Menu from './Selector_Menu.js';
+
 import axios from 'axios';
 
-const Insertion_Form = ({ batea, selectedCell, sectores, onManualCellSelect, onSectorUpdate }) => {
+const Insertion_Form = ({ bateas, batea, selectedCell, sectores, onManualCellSelect, onSectorUpdate }) => {
     const [movementType, setMovementType] = useState('entrada');
     const [selectedCuerdaType, setSelectedCuerdaType] = useState('');
     const [cantidad, setCantidad] = useState('');
@@ -32,7 +34,7 @@ const Insertion_Form = ({ batea, selectedCell, sectores, onManualCellSelect, onS
     const [colInput, setColInput] = useState('');
 
     const [dialogOpen, setDialogOpen] = useState(false);
-    const [destinoBateaId, setDestinoBateaId] = useState('');
+    const [destinoBatea, setDestinoBatea] = useState('');
     const [destinoRow, setDestinoRow] = useState('');
     const [destinoCol, setDestinoCol] = useState('');
 
@@ -110,7 +112,7 @@ const Insertion_Form = ({ batea, selectedCell, sectores, onManualCellSelect, onS
             // Limpiar estados
             setCantidad('');
             setSelectedCuerdaType('');
-            setDestinoBateaId('');
+            setDestinoBatea('');
             setDestinoRow('');
             setDestinoCol('');
             setDialogOpen(false);
@@ -228,14 +230,7 @@ const Insertion_Form = ({ batea, selectedCell, sectores, onManualCellSelect, onS
                 </DialogTitle>
                 <DialogContent dividers>
                     <FormControl fullWidth sx={{ mt: 2 }}>
-                        <TextField
-                            fullWidth
-                            label="Batea Destino (ID)"
-                            type="text"
-                            sx={{ mt: 2 }}
-                            value={destinoBateaId}
-                            onChange={(e) => setDestinoBateaId(e.target.value)}
-                        />
+                        <Selector_Menu bateas={bateas} onSelectBatea={setDestinoBatea} />
                     </FormControl>
                     <Grid container spacing={2} sx={{ mt: 1 }}>
                         <Grid item xs={6}>
@@ -264,16 +259,16 @@ const Insertion_Form = ({ batea, selectedCell, sectores, onManualCellSelect, onS
                     </Button>
                     <Button
                         onClick={() =>
-                            console.log(destinoBateaId, parseInt(destinoCol)-1, parseInt(destinoRow)-1) ||
+                            console.log(destinoBatea, parseInt(destinoCol)-1, parseInt(destinoRow)-1) ||
                             enviarMovimiento({
-                                bateaId: destinoBateaId,
+                                bateaId: destinoBatea.id,
                                 x: parseInt(destinoCol) - 1,
                                 y: parseInt(destinoRow) - 1
                             })
                         }
                         color="primary"
                         variant="contained"
-                        disabled={!destinoBateaId || !destinoRow || !destinoCol}
+                        disabled={!destinoBatea.id || !destinoRow || !destinoCol}
                     >
                         Confirmar Intercambio
                     </Button>

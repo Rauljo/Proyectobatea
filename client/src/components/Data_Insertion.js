@@ -21,6 +21,22 @@ const Data_Insertion = () => {
     const [bateaData, setBateaData] = useState(null);
     const [loading, setLoading] = useState(false);
 
+    const [bateas, setBateas] = useState([]);
+
+    useEffect(() => {
+        const fetchBateas = async () => {
+            try {
+                const response = await axios.get('http://localhost:5010/bateas');
+                setBateas(response.data);
+            } catch (error) {
+                console.error("Error fetching bateas:", error.message);
+            }
+        };
+
+        fetchBateas();
+    }, []);
+
+
 
     const handleSelectBatea = (batea) => {
         setSelected(batea);
@@ -73,7 +89,7 @@ const Data_Insertion = () => {
                     marginTop: '80px',
                 }}
             >
-                <Selector_Menu onSelectBatea={handleSelectBatea} />
+                <Selector_Menu onSelectBatea={handleSelectBatea} bateas={bateas}/>
                 <Nueva_Batea />
             </Box>
 
@@ -131,6 +147,7 @@ const Data_Insertion = () => {
                             sectores={bateaData}
                             onManualCellSelect={handleManualCellSelect}
                             onSectorUpdate={handleSectorUpdate}
+                            bateas = {bateas}
                             />
                         </Box>
                         </Grid>
