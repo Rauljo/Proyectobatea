@@ -18,8 +18,8 @@ export default function FormDialog() {
 
   const[name, setName] = React.useState("");
   const[polygon, setPolygon] = React.useState("");
-  const[x, setX] = React.useState("");
-  const[y, setY] = React.useState("");
+  const[row, setRow] = React.useState("");
+  const[col, setCol] = React.useState("");
 
 
 
@@ -33,7 +33,7 @@ export default function FormDialog() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const data = { name, polygon, x, y };
+    const data = { name, polygon, row, col };
 
     try {
         const response = await axios.post("http://localhost:5010/bateas", data);
@@ -51,9 +51,9 @@ export default function FormDialog() {
   // Generar las filas y columnas de la tabla
   const generateTable = () => {
     let rows = [];
-    for (let i = 0; i < y; i++) {
+    for (let i = 0; i < row; i++) {
       let cols = [];
-      for (let j = 0; j < x; j++) {
+      for (let j = 0; j < col; j++) {
         cols.push(
           <TableCell key={j} sx={{ border: '1px solid black', textAlign: 'center' }}>
             {i + 1} - {j + 1}
@@ -119,26 +119,26 @@ export default function FormDialog() {
                 <TextField
                   required
                   margin="dense"
-                  id="x"
-                  name="X"
-                  label="X"
+                  id="row"
+                  name="Row"
+                  label="Row"
                   type="number"
                   fullWidth
                   variant="standard"
-                  value={x}
-                  onChange={(event) => setX(event.target.value)}
+                  value={row}
+                  onChange={(event) => setRow(event.target.value)}
                 />
                 <TextField
                   required
                   margin="dense"
-                  id="y"
-                  name="Y"
-                  label="Y"
+                  id="col"
+                  name="Col"
+                  label="Col"
                   type="number"
                   fullWidth
                   variant="standard"
-                  value={y}
-                  onChange={(event) => setY(event.target.value)}
+                  value={col}
+                  onChange={(event) => setCol(event.target.value)}
                 />
               </Stack>
 

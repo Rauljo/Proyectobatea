@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 
 const Esquema_Batea = ({ batea, selectedCell, onCellSelect }) => {
-    const rows = batea.x_sector;
-    const cols = batea.y_sector;
+    const rows = batea.row_sector;
+    const cols = batea.col_sector;
 
     // Guardamos solo la celda seleccionada como [fila, columna]
     const [currentSelectedCell, setCurrentSelectedCell] = useState(selectedCell);

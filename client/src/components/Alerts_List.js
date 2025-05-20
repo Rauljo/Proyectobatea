@@ -74,7 +74,7 @@ const Alerts_List = () => {
                   <TableCell>{row.tipo_cuerda}</TableCell>
                   <TableCell>{row.cantidad}</TableCell>
                   <TableCell>{row.operacion}</TableCell>
-                  <TableCell>{`(${row.sector_x}, ${row.sector_y})`}</TableCell>
+                  <TableCell>{`(${row.sector_row}, ${row.sector_col})`}</TableCell>
                   <TableCell>{new Date(row.fecha).toLocaleString()}</TableCell>
                   <TableCell>{formatInterval(row.vigencia)}</TableCell>
                 </TableRow>
