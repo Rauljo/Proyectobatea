@@ -9,6 +9,17 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 
+const formatInterval = (vigencia) => {
+  if (!vigencia) return '';
+
+  const days = vigencia.days ?? 0;
+  const hours = String(vigencia.hours ?? 0).padStart(2, '0');
+  const minutes = String(vigencia.minutes ?? 0).padStart(2, '0');
+  const seconds = String(vigencia.seconds ?? 0).padStart(2, '0');
+
+  return `${days}d ${hours}:${minutes}:${seconds}`;
+};
+
 
 const Visualizar_Movimientos = ({batea}) => {
 
@@ -21,7 +32,7 @@ const Visualizar_Movimientos = ({batea}) => {
         const fetchMovimientos = async () => {
             setLoading(true);
             try {
-                const response = await axios.get(`http://localhost:5010/movimientos/${batea.id}`);
+                const response = await axios.get(`http://localhost:5010/movimientos/${batea.id}?vigencia=true`);
                 setMovimientos(response.data);
                 console.log(response.data);
             } catch (error) {
@@ -49,6 +60,8 @@ const Visualizar_Movimientos = ({batea}) => {
                         <TableCell><strong>Operación</strong></TableCell>
                         <TableCell><strong>Fecha Previa</strong></TableCell>
                         <TableCell><strong>Nota</strong></TableCell>
+                        <TableCell><strong>Vigente</strong></TableCell>
+                        <TableCell><strong>Vigencia</strong></TableCell>
                     </TableRow>
                     </TableHead>
                     <TableBody>
@@ -68,6 +81,16 @@ const Visualizar_Movimientos = ({batea}) => {
                         </TableCell>
                         <TableCell>{movimiento.fecha_previa}</TableCell>
                         <TableCell>{movimiento.nota}</TableCell>
+                        <TableCell>
+                            {movimiento.operacion === 'entrada' ? (
+                                movimiento.vigente ? (
+                                    <span style={{ color: "green", fontWeight: "bold" }}>Sí</span>
+                                ) : (
+                                    <span style={{ color: "red", fontWeight: "bold" }}>No</span>
+                                )
+                            ) : null}
+                        </TableCell>
+                        <TableCell>{formatInterval(movimiento.vigencia)}</TableCell>
                         </TableRow>
                     ))}
                     </TableBody>
