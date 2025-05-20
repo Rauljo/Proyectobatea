@@ -26,6 +26,7 @@ const Navigation = () => {
                 <Tabs value={value} onChange={handleChange} textColor="inherit">
                     <Tab label="Inserción" sx={{ fontWeight: 'bold' }} component={Link} to="/insercion" />
                     <Tab label="Visualización" sx={{ fontWeight: 'bold' }} component={Link} to="/visualizacion" />
+                    <Tab label="Alertas" sx={{ fontWeight: 'bold' }} component={Link} to="/alerts" />
                 </Tabs>
             </Toolbar>
         </AppBar>
