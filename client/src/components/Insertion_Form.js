@@ -69,7 +69,7 @@ const Insertion_Form = ({ bateas, batea, selectedCell, sectores, onManualCellSel
     };
 
     const enviarMovimiento = async (destino = null) => {
-        const [x, y] = selectedCell;
+        const [row, col] = selectedCell;
         const bateaId = batea.id;
         const cantidadParsed = parseInt(cantidad);
 
@@ -77,8 +77,8 @@ const Insertion_Form = ({ bateas, batea, selectedCell, sectores, onManualCellSel
 
 
             const payload = {
-                x,
-                y,
+                row,
+                col,
                 batea: bateaId,
                 tipo_cuerda: selectedCuerdaType,
                 cantidad: cantidadParsed,
@@ -87,7 +87,7 @@ const Insertion_Form = ({ bateas, batea, selectedCell, sectores, onManualCellSel
 
             if (movementType === 'intercambio' && destino) {
                 payload.tipo_operacion = 'salida';
-                payload.nota = `Intercambio con Batea ${destino.bateaId} en (${destino.x + 1}, ${destino.y + 1})`;
+                payload.nota = `Intercambio con Batea ${destino.bateaId} en (${destino.row + 1}, ${destino.col + 1})`;
             };
             console.log('Payload:', payload);
             // Enviar movimiento base
@@ -96,18 +96,18 @@ const Insertion_Form = ({ bateas, batea, selectedCell, sectores, onManualCellSel
 
             //Ahora, si hay un intercambio, enviamos el movimiento de entrada
             if (movementType === 'intercambio' && destino) {
-                payload.x = destino.x;
-                payload.y = destino.y;
+                payload.row = destino.row;
+                payload.col = destino.col;
                 payload.batea = destino.bateaId;
                 payload.tipo_operacion = 'entrada';
-                payload.nota = `Intercambio con Batea ${bateaId} en (${x + 1}, ${y + 1})`;
+                payload.nota = `Intercambio con Batea ${bateaId} en (${row + 1}, ${col + 1})`;
 
                 const response = await axios.post('http://localhost:5010/movimientos', payload);
                 console.log('Movimiento de entrada enviado:', response.data);
 
             };
 
-            if (onSectorUpdate) onSectorUpdate(x, y);
+            if (onSectorUpdate) onSectorUpdate(row, col);
 
             // Limpiar estados
             setCantidad('');
@@ -262,8 +262,8 @@ const Insertion_Form = ({ bateas, batea, selectedCell, sectores, onManualCellSel
                             console.log(destinoBatea, parseInt(destinoCol)-1, parseInt(destinoRow)-1) ||
                             enviarMovimiento({
                                 bateaId: destinoBatea.id,
-                                x: parseInt(destinoCol) - 1,
-                                y: parseInt(destinoRow) - 1
+                                row: parseInt(destinoRow) - 1,
+                                col: parseInt(destinoCol) - 1
                             })
                         }
                         color="primary"

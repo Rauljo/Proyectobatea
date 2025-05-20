@@ -4,29 +4,29 @@ import Grid from '@mui/material/Grid2';
 import { Box, Typography, TextField } from '@mui/material';
 
 const MatrizSectores = ({ batea, bateaData }) => {
-  const totalX = batea.x_sector;
-  const totalY = batea.y_sector;
+  const totalRow = batea.row_sector;
+  const totalCol = batea.col_sector;
 
   // Cuanto mayor sea el número de sectores, menor será el tamaño de celda
-  const cellSize = Math.max(40, 100 - Math.max(totalX, totalY) * 2); // Ajustable
+  const cellSize = Math.max(40, 100 - Math.max(totalCol, totalRow) * 2); // Ajustable
 
   return (
     <Box
       sx={{
         display: 'grid',
-        gridTemplateColumns: `repeat(${totalX}, ${cellSize}px)`,
+        gridTemplateColumns: `repeat(${totalCol}, ${cellSize}px)`,
         gap: '6px',
         marginTop: '20px',
         justifyContent: 'center',
       }}
     >
-      {Array.from({ length: totalY }).flatMap((_, y) =>
-        Array.from({ length: totalX }).map((_, x) => {
-          const sector = bateaData.find((s) => s.x === x && s.y === y);
+      {Array.from({ length: totalRow }).flatMap((_, row) =>
+        Array.from({ length: totalCol }).map((_, col) => {
+          const sector = bateaData.find((s) => s.col === col && s.row === row);
 
           return (
             <Box
-              key={`${x}-${y}`}
+              key={`${row}-${col}`}
               sx={{
                 //width: `${cellSize}px`,
                 //height: `${cellSize}px`,
@@ -43,7 +43,7 @@ const MatrizSectores = ({ batea, bateaData }) => {
               }}
             >
               <Typography variant="body2" fontWeight="bold">
-                {x+1} - {y+1}
+                {row+1} - {col+1}
               </Typography>
               {sector &&
                 (sector.cuerdas_pesca > 0 ||
@@ -145,7 +145,7 @@ const Info_Bateas = ({ batea }) => {
                     <Grid item xs={6} md={3}>
                         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                             <Typography variant="subtitle1" sx={{ fontWeight: 'bold', marginBottom: '8px' }}>
-                                X
+                                Rows
                             </Typography>
                             <Box
                                 sx={{
@@ -158,14 +158,14 @@ const Info_Bateas = ({ batea }) => {
                                     fontWeight: 'bold',
                                 }}
                             >
-                                <Typography variant="body1">{batea.x_sector}</Typography>
+                                <Typography variant="body1">{batea.row_sector}</Typography>
                             </Box>
                         </Box>
                     </Grid>
                     <Grid item xs={6} md={3}>
                         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                             <Typography variant="subtitle1" sx={{ fontWeight: 'bold', marginBottom: '8px' }}>
-                                Y
+                                Cols
                             </Typography>
                             <Box
                                 sx={{
@@ -178,7 +178,7 @@ const Info_Bateas = ({ batea }) => {
                                     fontWeight: 'bold',
                                 }}
                             >
-                                <Typography variant="body1">{batea.y_sector}</Typography>
+                                <Typography variant="body1">{batea.col_sector}</Typography>
                             </Box>
                         </Box>
                     </Grid>

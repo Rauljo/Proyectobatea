@@ -21,14 +21,14 @@ app.get("/bateas", async (req, res) => {
 //Add bateas
 app.post("/bateas", async (req, res) => {
     try {
-        const { name, polygon, x, y} = req.body;
-        const newBatea = await pool.query("INSERT INTO bateas (name, polygon, x_sector, y_sector) VALUES($1, $2, $3, $4) RETURNING *", [name, polygon, x, y]);
+        const { name, polygon, row, col} = req.body;
+        const newBatea = await pool.query("INSERT INTO bateas (name, polygon, row_sector, col_sector) VALUES($1, $2, $3, $4) RETURNING *", [name, polygon, row, col]);
         res.json(newBatea.rows[0]);
 
         //We also add as many sectors as the user wants
-        for (let i = 0; i < x; i++) {
-            for (let j = 0; j < y; j++) {
-                const newSector = await pool.query("INSERT INTO sectores (x, y, batea, cuerdas_pesca, cuerdas_piedra, cuerdas_desdoble, cuerdas_comercial) VALUES($1, $2, $3, 0, 0, 0, 0) RETURNING *", [i, j, newBatea.rows[0].id]);
+        for (let i = 0; i < row; i++) {
+            for (let j = 0; j < col; j++) {
+                const newSector = await pool.query("INSERT INTO sectores (row, col, batea, cuerdas_pesca, cuerdas_piedra, cuerdas_desdoble, cuerdas_comercial) VALUES($1, $2, $3, 0, 0, 0, 0) RETURNING *", [i, j, newBatea.rows[0].id]);
             }
         }
     } catch (err) {
@@ -48,10 +48,10 @@ app.get("/sectores/:id", async (req, res) => {
     }
 });
 
-//Insert movement based on x, y and batea
+//Insert movement based on row, col and batea
 app.post("/movimientos", async (req, res) => {
     try {
-        const { x, y, batea, tipo_cuerda, cantidad, tipo_operacion, nota } = req.body;
+        const { row, col, batea, tipo_cuerda, cantidad, tipo_operacion, nota } = req.body;
 
         console.log(req.body);
 
@@ -60,24 +60,24 @@ app.post("/movimientos", async (req, res) => {
         //Check if nota contains 'nota' contains the word 'Intercambio' and if tipo_operacion is 'entrada'
         if (nota && nota.toLowerCase().includes('intercambio') && tipo_operacion === 'entrada') {
             console.log("AJHAJAJAJA");
-            //nota will have the follwowing format: 'Intercambio con Batea id en sector (x, y)'. I want to obtain id, x and y
+            //nota will have the follwowing format: 'Intercambio con Batea id en sector (row, col)'. I want to obtain id, row and col
             console.log("NOTA", nota);
             const regex = /Intercambio con Batea (\d+) en \((\d+), (\d+)\)/;
             const match = nota.match(regex);
             console.log("MATCH", match);
             if (match) {
                 req.batea_previa = parseInt(match[1]);
-                req.x_intercambio = parseInt(match[2])-1;
-                req.y_intercambio = parseInt(match[3])-1;
+                req.row_intercambio = parseInt(match[2])-1;
+                req.col_intercambio = parseInt(match[3])-1;
 
-                console.log("HOLA", req.batea_previa, req.x_intercambio, req.y_intercambio);
+                console.log("HOLA", req.batea_previa, req.row_intercambio, req.col_intercambio);
 
                 const movimientoPrevio = await pool.query(`
                     SELECT COALESCE(fecha_previa, fecha) as fecha FROM movimientos
-                    WHERE sector_x = $1 AND sector_y = $2 AND sector_batea = $3
+                    WHERE sector_row = $1 AND sector_col = $2 AND sector_batea = $3
                     AND operacion = 'entrada' AND tipo_cuerda = $4
                     ORDER BY fecha DESC LIMIT 1`, //TODO: RESOLVER PROBLEMAS CON ZONAS TEMPORALES... 
-                    [req.x_intercambio, req.y_intercambio, req.batea_previa, tipo_cuerda]
+                    [req.row_intercambio, req.col_intercambio, req.batea_previa, tipo_cuerda]
                 );
 
                 //TODO: COMPROBAR QUE HAYA CUERDAS DE LAS QUE SE QUIERE QUITAR... PARA HACER LOS MOVIMIENTOS... 
@@ -94,20 +94,20 @@ app.post("/movimientos", async (req, res) => {
                 //fecha_previa of this movement will be the date of the last movement of the same tipo_cuerda and tipo_operacion = 'entrada' in the other batea
                 newMovimiento = await pool.query(`
                     INSERT INTO movimientos (
-                        tipo_cuerda, cantidad, operacion, sector_x, sector_y, sector_batea, fecha_previa, nota
+                        tipo_cuerda, cantidad, operacion, sector_row, sector_col, sector_batea, fecha_previa, nota
                     )
                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
                     RETURNING *`,
-                    [tipo_cuerda, cantidad, tipo_operacion, x, y, batea, fecha_previa, nota || '']
+                    [tipo_cuerda, cantidad, tipo_operacion, row, col, batea, fecha_previa, nota || '']
                 );
             }
         }
         else{
             newMovimiento = await pool.query(`
-                INSERT INTO movimientos (tipo_cuerda, cantidad, operacion, sector_x, sector_y, sector_batea, nota)
+                INSERT INTO movimientos (tipo_cuerda, cantidad, operacion, sector_row, sector_col, sector_batea, nota)
                 VALUES($1, $2, $3, $4, $5, $6, $7)
                 RETURNING *`,
-                [tipo_cuerda, cantidad, tipo_operacion, x, y, batea, nota || '']
+                [tipo_cuerda, cantidad, tipo_operacion, row, col, batea, nota || '']
             );
         }     
 
@@ -140,7 +140,7 @@ app.get("/movimientos/:id", async (req, res) => {
 
         if (vigencia === 'true') {
             queryText = `
-                SELECT id, fecha, tipo_cuerda, cantidad, operacion, vigente, sector_x, sector_y, sector_batea, fecha_previa, nota, 
+                SELECT id, fecha, tipo_cuerda, cantidad, operacion, vigente, sector_row, sector_col, sector_batea, fecha_previa, nota, 
                 CASE
                     WHEN operacion = 'entrada' THEN
                         CASE
@@ -171,12 +171,12 @@ app.get("/movimientos/:id", async (req, res) => {
 }
 );
 
-//Get x alerts
+//Get limit alerts
 app.get("/alerts/:limit", async (req, res) => {
     try {
         const { limit } = req.params;
         const alerts = await pool.query(`
-            SELECT b.name, m.id, tipo_cuerda, cantidad, operacion, vigente, sector_x, sector_y, fecha, fecha_previa, nota, vigente, now() - COALESCE(fecha_previa, fecha) as vigencia
+            SELECT b.name, m.id, tipo_cuerda, cantidad, operacion, vigente, sector_row, sector_col, fecha, fecha_previa, nota, vigente, now() - COALESCE(fecha_previa, fecha) as vigencia
             FROM movimientos m join bateas b on m.sector_batea = b.id
             WHERE m.vigente = true
             ORDER BY vigencia DESC, id DESC

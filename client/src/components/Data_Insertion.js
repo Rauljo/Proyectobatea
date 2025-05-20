@@ -47,10 +47,10 @@ const Data_Insertion = () => {
         setSelectedCell(cell); // Actualiza la celda seleccionada con las coordenadas x e y
     };
 
-    const handleSectorUpdate = (x, y, updatedSector) => {
+    const handleSectorUpdate = (row, col, updatedSector) => {
         setBateaData((prev) =>
           prev.map((s) =>
-            s.x === x && s.y === y ? { ...s, ...updatedSector } : s
+            s.row === row && s.col === col ? { ...s, ...updatedSector } : s
           )
         );
       };

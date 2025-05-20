@@ -8,19 +8,19 @@ CREATE TABLE bateas(
 	id SERIAL primary key,
 	name varchar(25),
 	polygon varchar(25),
-	x_sector int,
-	y_sector int
+	row_sector int,
+	col_sector int
 );
 
 CREATE TABLE sectores(
-	x int,
-	y int,
+	row int,
+	col int,
 	batea int,
 	cuerdas_pesca int default 0,
 	cuerdas_piedra int default 0,
 	cuerdas_desdoble int default 0,
 	cuerdas_comercial int default 0,
-	primary key (x,y,batea),
+	primary key (row,col,batea),
 	foreign key(batea) references bateas(id)
 );
 
@@ -29,15 +29,15 @@ create table movimientos (
 	tipo_cuerda varchar(10) check (tipo_cuerda in ('pesca', 'piedra', 'desdoble', 'comercial')),
 	cantidad int,
 	operacion varchar(10) check (operacion in ('entrada', 'salida')),
-	sector_x int,
-	sector_y int,
+	sector_row int,
+	sector_col int,
 	sector_batea int,
 	fecha timestamp default current_timestamp,
     fecha_previa timestamp default null,
     nota varchar(255) default '',
     vigente bool default null,
     vigencia interval default null,
-	foreign key(sector_x, sector_y, sector_batea) references sectores(x,y,batea)
+	foreign key(sector_row, sector_col, sector_batea) references sectores(row,col,batea)
 );
 
 CREATE OR REPLACE FUNCTION establecer_vigencia() RETURNS TRIGGER AS $$
@@ -61,38 +61,38 @@ begin
     if new_mov.operacion = 'entrada' then
         if new_mov.tipo_cuerda = 'pesca' then
             update sectores set cuerdas_pesca = cuerdas_pesca + new_mov.cantidad
-            where x = new_mov.sector_x and y = new_mov.sector_y and batea = new_mov.sector_batea
+            where row = new_mov.sector_row and col = new_mov.sector_col and batea = new_mov.sector_batea
             returning cuerdas_pesca into nuevo_valor;
         elsif new_mov.tipo_cuerda = 'piedra' then
             update sectores set cuerdas_piedra = cuerdas_piedra + new_mov.cantidad
-            where x = new_mov.sector_x and y = new_mov.sector_y and batea = new_mov.sector_batea
+            where row = new_mov.sector_row and col = new_mov.sector_col and batea = new_mov.sector_batea
             returning cuerdas_piedra into nuevo_valor;
         elsif new_mov.tipo_cuerda = 'desdoble' then
             update sectores set cuerdas_desdoble = cuerdas_desdoble + new_mov.cantidad
-            where x = new_mov.sector_x and y = new_mov.sector_y and batea = new_mov.sector_batea
+            where row = new_mov.sector_row and col = new_mov.sector_col and batea = new_mov.sector_batea
             returning cuerdas_desdoble into nuevo_valor;
         elsif new_mov.tipo_cuerda = 'comercial' then
             update sectores set cuerdas_comercial = cuerdas_comercial + new_mov.cantidad
-            where x = new_mov.sector_x and y = new_mov.sector_y and batea = new_mov.sector_batea
+            where row = new_mov.sector_row and col = new_mov.sector_col and batea = new_mov.sector_batea
             returning cuerdas_comercial into nuevo_valor;
         end if;
 
     elsif new_mov.operacion = 'salida' then
         if new_mov.tipo_cuerda = 'pesca' then
             update sectores set cuerdas_pesca = cuerdas_pesca - new_mov.cantidad
-            where x = new_mov.sector_x and y = new_mov.sector_y and batea = new_mov.sector_batea
+            where row = new_mov.sector_row and col = new_mov.sector_col and batea = new_mov.sector_batea
             returning cuerdas_pesca into nuevo_valor;
         elsif new_mov.tipo_cuerda = 'piedra' then
             update sectores set cuerdas_piedra = cuerdas_piedra - new_mov.cantidad
-            where x = new_mov.sector_x and y = new_mov.sector_y and batea = new_mov.sector_batea
+            where row = new_mov.sector_row and col = new_mov.sector_col and batea = new_mov.sector_batea
             returning cuerdas_piedra into nuevo_valor;
         elsif new_mov.tipo_cuerda = 'desdoble' then
             update sectores set cuerdas_desdoble = cuerdas_desdoble - new_mov.cantidad
-            where x = new_mov.sector_x and y = new_mov.sector_y and batea = new_mov.sector_batea
+            where row = new_mov.sector_row and col = new_mov.sector_col and batea = new_mov.sector_batea
             returning cuerdas_desdoble into nuevo_valor;
         elsif new_mov.tipo_cuerda = 'comercial' then
             update sectores set cuerdas_comercial = cuerdas_comercial - new_mov.cantidad
-            where x = new_mov.sector_x and y = new_mov.sector_y and batea = new_mov.sector_batea
+            where row = new_mov.sector_row and col = new_mov.sector_col and batea = new_mov.sector_batea
             returning cuerdas_comercial into nuevo_valor;
         end if;
     end if;
@@ -113,7 +113,7 @@ begin
     for entrada in 
         select *
         from movimientos m
-        where m.vigente = true and m.sector_x = new_mov.sector_x and m.sector_y = new_mov.sector_y and m.sector_batea = new_mov.sector_batea and m.tipo_cuerda = new_mov.tipo_cuerda
+        where m.vigente = true and m.sector_row = new_mov.sector_row and m.sector_col = new_mov.sector_col and m.sector_batea = new_mov.sector_batea and m.tipo_cuerda = new_mov.tipo_cuerda
         order by fecha desc, id desc
     loop
 
