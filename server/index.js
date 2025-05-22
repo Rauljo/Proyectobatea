@@ -116,7 +116,12 @@ app.post("/movimientos", async (req, res) => {
         res.json(newMovimiento.rows[0]);
     } catch (err) {
         console.error(err.message);
-        res.status(500).send("Error en el servidor");
+        if (err.message.includes("No hay suficientes cuerdas")) {
+            res.status(400).json({ error: err.message });
+        }
+        else{
+            res.status(500).json({ error: "Error en el servidor" });
+        }
     }
 });
 
@@ -167,6 +172,7 @@ app.get("/movimientos/:id", async (req, res) => {
     }
     catch (err) {
         console.error(err.message);
+
     }
 }
 );
