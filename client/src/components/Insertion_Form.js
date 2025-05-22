@@ -90,9 +90,17 @@ const Insertion_Form = ({ bateas, batea, selectedCell, sectores, onManualCellSel
                 payload.nota = `Intercambio con Batea ${destino.bateaId} en (${destino.row + 1}, ${destino.col + 1})`;
             };
             console.log('Payload:', payload);
+
             // Enviar movimiento base
-            const response = await axios.post('http://localhost:5010/movimientos', payload);
-            console.log('Movimiento enviado:', response.data);
+            try {
+                const response = await axios.post('http://localhost:5010/movimientos', payload);
+                console.log('Movimiento enviado:', response.data);
+
+            } catch (error) {
+                const message = error.response?.data?.error || "Error al enviar movimiento";
+                alert(`Error: ${message}`);
+            }
+            
 
             //Ahora, si hay un intercambio, enviamos el movimiento de entrada
             if (movementType === 'intercambio' && destino) {

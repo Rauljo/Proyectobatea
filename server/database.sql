@@ -54,6 +54,37 @@ before insert on movimientos
 for each row
 execute function establecer_vigencia();
 
+create or replace function verificar_movimiento() returns trigger as $$
+begin
+    if (new.operacion = 'salida') then
+        -- Verificar que la cantidad de salida no exceda la cantidad actual
+        if (new.tipo_cuerda = 'pesca') then
+            if (new.cantidad > (select cuerdas_pesca from sectores where row = new.sector_row and col = new.sector_col and batea = new.sector_batea)) then
+                raise exception 'No hay suficientes cuerdas de pesca en el sector (%,%) de batea %', new.sector_row+1, new.sector_col+1, new.sector_batea;
+            end if;
+        elsif (new.tipo_cuerda = 'piedra') then
+            if (new.cantidad > (select cuerdas_piedra from sectores where row = new.sector_row and col = new.sector_col and batea = new.sector_batea)) then
+                raise exception 'No hay suficientes cuerdas de piedra en el sector (%,%) de batea %', new.sector_row+1, new.sector_col+1, new.sector_batea;
+            end if;
+        elsif (new.tipo_cuerda = 'desdoble') then
+            if (new.cantidad > (select cuerdas_desdoble from sectores where row = new.sector_row and col = new.sector_col and batea = new.sector_batea)) then
+                raise exception 'No hay suficientes cuerdas de desdoble en el sector (%,%) de batea %', new.sector_row+1, new.sector_col+1, new.sector_batea;
+            end if;
+        elsif (new.tipo_cuerda = 'comercial') then
+            if (new.cantidad > (select cuerdas_comercial from sectores where row = new.sector_row and col = new.sector_col and batea = new.sector_batea)) then
+                raise exception 'No hay suficientes cuerdas comerciales en el sector (%,%) de batea %', new.sector_row+1, new.sector_col+1, new.sector_batea;
+            end if;
+        end if;
+    end if;
+    return new;
+end;
+$$ language plpgsql;
+
+create trigger verificar_movimiento_trigger
+before insert on movimientos
+for each row
+execute function verificar_movimiento();
+
 create or replace function actualizar_cuerdas(new_mov movimientos) returns integer as $$
 declare
     nuevo_valor INTEGER;
@@ -126,7 +157,8 @@ begin
         if nuevo_valor <= 0 and -nuevo_valor >= entrada.cantidad then
             update movimientos
             set vigente = FALSE,
-                vigencia = (now() - COALESCE(fecha_previa, fecha))
+                vigencia = (now() - COALESCE(fecha_previa, fecha)),
+                nota = 'Retirado ' || current_date || ' mov ' || new_mov.id
             where id = entrada.id and tipo_cuerda = entrada.tipo_cuerda;
         end if;
 
