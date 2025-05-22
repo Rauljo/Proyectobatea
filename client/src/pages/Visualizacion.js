@@ -1,21 +1,20 @@
-import React from 'react';
-import { useState } from 'react';
-import Grid from '@mui/material/Grid2';
-import { Box } from '@mui/material'; // Asegúrate de importar Box
-
-
+// Visualizacion.jsx
+import React, { useState, useEffect } from 'react';
+import Grid from '@mui/material/Grid';
+import { Box } from '@mui/material';
 
 import Selector_Menu from '../components/Selector_Menu';
 import Visualizar_Batea from '../components/Visualizar_Batea';
 import Visualizar_Movimientos from '../components/Visualizar_Movimientos';
+import { Info_Bateas } from '../components/Visualizar_Batea';
 
 
 const Visualizacion = () => {
-    const [selectedBatea, setSelected] = React.useState(null);
-
+    const [selectedBatea, setSelected] = useState(null);
     const [bateas, setBateas] = useState([]);
+    const [bateaData, setBateaData] = useState(null);
 
-    React.useEffect(() => {
+    useEffect(() => {
         const fetchBateas = async () => {
             try {
                 const response = await fetch('http://localhost:5010/bateas');
@@ -28,13 +27,29 @@ const Visualizacion = () => {
 
         fetchBateas();
     }, []);
-    
+
     const handleSelectBatea = (batea) => {
         setSelected(batea);
     };
 
+    useEffect(() => {
+        const fetchBateaData = async () => {
+            if (!selectedBatea) return;
+            try {
+                const response = await fetch(`http://localhost:5010/sectores/${selectedBatea.id}`);
+                const data = await response.json();
+                setBateaData(data);
+            } catch (error) {
+                console.error("Error fetching batea data:", error.message);
+            }
+        }
+
+        fetchBateaData();
+    }, [selectedBatea]);
+
     return (
         <div>
+            {/* Menú de selección */}
             <Box
                 sx={{
                     display: 'flex',
@@ -44,35 +59,30 @@ const Visualizacion = () => {
                     marginTop: '80px',
                 }}
             >
-                <Selector_Menu onSelectBatea={handleSelectBatea} bateas={bateas}/>
+                <Selector_Menu onSelectBatea={handleSelectBatea} bateas={bateas} />
             </Box>
-            {selectedBatea && (
-                <Box
-                    sx={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    marginTop: 4,
-                    }}
-                >
+
+            {bateaData && (
+                <Box>
+                    <Info_Bateas batea={selectedBatea} sectores={bateaData} />
                     <Grid
-                    container
-                    spacing={10}
-                    sx={{
-                        justifyContent: 'center', // centra los Grid items dentro del container
-                        //maxWidth: '1200px',        // opcional: limita el ancho
-                    }}
-                    >
-                    <Grid item>
-                        <Visualizar_Batea batea={selectedBatea} onlyvisual="1" />
-                    </Grid>
-                    <Grid item>
-                        <Visualizar_Movimientos batea={selectedBatea} />
-                    </Grid>
-                    </Grid>
+                        container
+                        spacing={4}
+                        sx={{
+                            justifyContent: 'center',
+                        }}
+                        >
+                        <Grid item>
+                            <Visualizar_Batea batea={selectedBatea} bateaData={bateaData} />
+                        </Grid>
+                        <Grid item>
+                            <Visualizar_Movimientos batea={selectedBatea} />
+                        </Grid>
+                        </Grid>
                 </Box>
-                )}
+            )}
         </div>
     );
-}
+};
 
 export default Visualizacion;
