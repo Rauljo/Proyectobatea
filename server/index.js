@@ -4,7 +4,10 @@ const cors = require('cors');
 
 const pool = require('./db');
 
-app.use(cors());
+//app.use(cors());
+app.use(cors({
+    origin: 'http://localhost:3000'
+}))
 app.use(express.json());
 
 //Get bateas
