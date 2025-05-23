@@ -14,7 +14,7 @@ const formatInterval = (vigencia) => {
   return `${days}d ${hours}:${minutes}:${seconds}`;
 };
 
-const Alerts_List = () => {
+const AlertsList = () => {
   const [limit, setLimit] = useState('');
   const [alerts, setAlerts] = useState([]);
 
@@ -88,4 +88,4 @@ const Alerts_List = () => {
   );
 };
 
-export default Alerts_List;
+export default AlertsList;

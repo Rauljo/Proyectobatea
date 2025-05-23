@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { BASE_ENDPOINT } from '../endpoint';
+import { useState, useEffect } from 'react';
 
 
-const Esquema_Batea = ({ batea, selectedCell, onCellSelect }) => {
+const EsquemaBatea = ({ batea, selectedCell, onCellSelect }) => {
     const rows = batea.row_sector;
     const cols = batea.col_sector;
 
@@ -62,4 +61,4 @@ const Esquema_Batea = ({ batea, selectedCell, onCellSelect }) => {
     );
 };
 
-export default Esquema_Batea;
+export default EsquemaBatea;

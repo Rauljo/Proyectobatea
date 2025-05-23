@@ -1,10 +1,10 @@
 import React from 'react';
 
-import Alerts_List from '../components/Alerts_List';
+import AlertsList from '../components/AlertsList';
 
 const Alerts = () => {
     return (
-        <Alerts_List />
+        <AlertsList />
     );
 }
 

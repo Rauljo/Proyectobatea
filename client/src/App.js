@@ -3,11 +3,11 @@ import {Route, Routes} from "react-router-dom";
 
 import './App.css';
 
-import Data_Insertion from './components/Data_Insertion';
+import Data_Insertion from './components/DataInsertion';
 import Navigation from "./components/Menu";
 import Insercion from "./pages/Insercion";
 import Visualizacion from "./pages/Visualizacion";
-import Vigencia_Alerts from "./pages/Vigencia_Alerts";
+import Vigencia_Alerts from "./pages/VigenciaAlerts";
 
 
 function App() {

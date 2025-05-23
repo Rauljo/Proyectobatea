@@ -7,7 +7,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Stack from '@mui/material/Stack';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel, Paper } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
 import { BASE_ENDPOINT } from '../endpoint';
 
 
@@ -40,7 +40,7 @@ export default function FormDialog() {
     try {
         const response = await axios.post(`${BASE_ENDPOINT}/bateas`, data);
 
-        if (response.status == 200 || response.status == 201) {
+        if (response.status === 200 || response.status === 201) {
             console.log("Batea añadida correctamente");
             window.location.reload();
         }

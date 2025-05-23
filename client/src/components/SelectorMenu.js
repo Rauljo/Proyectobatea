@@ -1,7 +1,7 @@
 import React, { Fragment, useState } from "react";
 import { Autocomplete, TextField } from "@mui/material";
 
-const Selector_Menu = ({ onSelectBatea, bateas }) => {
+const SelectorMenu = ({ onSelectBatea, bateas }) => {
     const [selectedBatea, setSelectedBatea] = useState(null);
 
     return (
@@ -24,4 +24,4 @@ const Selector_Menu = ({ onSelectBatea, bateas }) => {
     );
 };
 
-export default Selector_Menu;
+export default SelectorMenu;

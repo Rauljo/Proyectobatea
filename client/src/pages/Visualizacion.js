@@ -3,10 +3,10 @@ import React, { useState, useEffect } from 'react';
 import Grid from '@mui/material/Grid';
 import { Box } from '@mui/material';
 
-import Selector_Menu from '../components/Selector_Menu';
-import Visualizar_Batea from '../components/Visualizar_Batea';
-import Visualizar_Movimientos from '../components/Visualizar_Movimientos';
-import { Info_Bateas } from '../components/Visualizar_Batea';
+import SelectorMenu from '../components/SelectorMenu';
+import VisualizarBatea from '../components/VisualizarBatea';
+import VisualizarMovimientos from '../components/VisualizarMovimientos';
+import { InfoBateas } from '../components/VisualizarBatea';
 import { BASE_ENDPOINT } from '../endpoint';
 
 
@@ -61,12 +61,12 @@ const Visualizacion = () => {
                     marginTop: '80px',
                 }}
             >
-                <Selector_Menu onSelectBatea={handleSelectBatea} bateas={bateas} />
+                <SelectorMenu onSelectBatea={handleSelectBatea} bateas={bateas} />
             </Box>
 
             {bateaData && (
                 <Box>
-                    <Info_Bateas batea={selectedBatea} sectores={bateaData} />
+                    <InfoBateas batea={selectedBatea} sectores={bateaData} />
                     <Grid
                         container
                         spacing={4}
@@ -75,10 +75,10 @@ const Visualizacion = () => {
                         }}
                         >
                         <Grid item>
-                            <Visualizar_Batea batea={selectedBatea} bateaData={bateaData} />
+                            <VisualizarBatea batea={selectedBatea} bateaData={bateaData} />
                         </Grid>
                         <Grid item>
-                            <Visualizar_Movimientos batea={selectedBatea} />
+                            <VisualizarMovimientos batea={selectedBatea} />
                         </Grid>
                         </Grid>
                 </Box>
