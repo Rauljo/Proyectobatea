@@ -10,6 +10,7 @@ import Visualizar_Batea from './Visualizar_Batea.js';
 import Esquema_Batea from './Esquema_Batea.js';
 import { Info_Bateas } from './Visualizar_Batea';
 import Insertion_Form from './Insertion_Form.js';
+import { BASE_ENDPOINT } from '../endpoint';
 
 
 
@@ -26,7 +27,7 @@ const Data_Insertion = () => {
     useEffect(() => {
         const fetchBateas = async () => {
             try {
-                const response = await axios.get('http://localhost:5010/bateas');
+                const response = await axios.get(`${BASE_ENDPOINT}/bateas`);
                 setBateas(response.data);
             } catch (error) {
                 console.error("Error fetching bateas:", error.message);
@@ -62,7 +63,7 @@ const Data_Insertion = () => {
         const fetchBateaData = async () => {
             setLoading(true);
             try {
-                const response = await axios.get(`http://localhost:5010/sectores/${selectedBatea.id}`);
+                const response = await axios.get(`${BASE_ENDPOINT}/sectores/${selectedBatea.id}`);
                 setBateaData(response.data);
             } catch (error) {
                 console.error("Error fetching batea data:", error.message);
@@ -72,6 +73,7 @@ const Data_Insertion = () => {
 
         fetchBateaData();
     }, [selectedBatea]); // Solo se ejecuta cuando seleccionamos una batea
+    
 
     if (loading) {
         return <div>Cargando...</div>;

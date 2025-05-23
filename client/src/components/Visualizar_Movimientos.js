@@ -8,6 +8,8 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
+import { BASE_ENDPOINT } from '../endpoint';
+
 
 const formatInterval = (vigencia) => {
   if (!vigencia) return '';
@@ -32,7 +34,7 @@ const Visualizar_Movimientos = ({batea}) => {
         const fetchMovimientos = async () => {
             setLoading(true);
             try {
-                const response = await axios.get(`http://localhost:5010/movimientos/${batea.id}?vigencia=true`);
+                const response = await axios.get(`${BASE_ENDPOINT}/movimientos/${batea.id}?vigencia=true`);
                 setMovimientos(response.data);
                 console.log(response.data);
             } catch (error) {

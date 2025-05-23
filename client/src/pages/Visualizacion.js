@@ -7,6 +7,8 @@ import Selector_Menu from '../components/Selector_Menu';
 import Visualizar_Batea from '../components/Visualizar_Batea';
 import Visualizar_Movimientos from '../components/Visualizar_Movimientos';
 import { Info_Bateas } from '../components/Visualizar_Batea';
+import { BASE_ENDPOINT } from '../endpoint';
+
 
 
 const Visualizacion = () => {
@@ -17,7 +19,7 @@ const Visualizacion = () => {
     useEffect(() => {
         const fetchBateas = async () => {
             try {
-                const response = await fetch('http://localhost:5010/bateas');
+                const response = await fetch(`${BASE_ENDPOINT}/bateas`);
                 const data = await response.json();
                 setBateas(data);
             } catch (error) {
@@ -36,7 +38,7 @@ const Visualizacion = () => {
         const fetchBateaData = async () => {
             if (!selectedBatea) return;
             try {
-                const response = await fetch(`http://localhost:5010/sectores/${selectedBatea.id}`);
+                const response = await fetch(`${BASE_ENDPOINT}/sectores/${selectedBatea.id}`);
                 const data = await response.json();
                 setBateaData(data);
             } catch (error) {

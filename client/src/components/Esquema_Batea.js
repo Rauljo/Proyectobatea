@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { BASE_ENDPOINT } from '../endpoint';
+
 
 const Esquema_Batea = ({ batea, selectedCell, onCellSelect }) => {
     const rows = batea.row_sector;

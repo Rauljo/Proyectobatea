@@ -25,6 +25,8 @@ import CloseIcon from '@mui/icons-material/Close';
 import Selector_Menu from './Selector_Menu.js';
 
 import axios from 'axios';
+import { BASE_ENDPOINT } from '../endpoint';
+
 
 const Insertion_Form = ({ bateas, batea, selectedCell, sectores, onManualCellSelect, onSectorUpdate }) => {
     const [movementType, setMovementType] = useState('entrada');
@@ -93,7 +95,7 @@ const Insertion_Form = ({ bateas, batea, selectedCell, sectores, onManualCellSel
 
             // Enviar movimiento base
             try {
-                const response = await axios.post('http://localhost:5010/movimientos', payload);
+                const response = await axios.post(`${BASE_ENDPOINT}/movimientos`, payload);
                 console.log('Movimiento enviado:', response.data);
 
             } catch (error) {
@@ -110,7 +112,7 @@ const Insertion_Form = ({ bateas, batea, selectedCell, sectores, onManualCellSel
                 payload.tipo_operacion = 'entrada';
                 payload.nota = `Intercambio con Batea ${bateaId} en (${row + 1}, ${col + 1})`;
 
-                const response = await axios.post('http://localhost:5010/movimientos', payload);
+                const response = await axios.post(`${BASE_ENDPOINT}/movimientos`, payload);
                 console.log('Movimiento de entrada enviado:', response.data);
 
             };
