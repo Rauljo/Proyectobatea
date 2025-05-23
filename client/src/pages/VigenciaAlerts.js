@@ -1,4 +1,3 @@
-import React from 'react';
 
 import AlertsList from '../components/AlertsList';
 

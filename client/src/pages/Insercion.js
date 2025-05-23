@@ -1,4 +1,3 @@
-import React from 'react';
 
 import DataInsertion from '../components/DataInsertion';
 
