@@ -7,7 +7,7 @@ const pool = require('./db');
 //app.use(cors());
 const allowedOrigins = [
     'http://localhost:3000',
-    'https://proyectobatea.pages.dev/'
+    'https://proyectobatea.pages.dev'
 ];
 
 app.use(cors({
