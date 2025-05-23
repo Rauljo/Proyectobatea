@@ -12,10 +12,12 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: function (origin, callback) {
+    // Permitir sin origin (Postman, servidor interno, etc.)
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      console.warn('Blocked by CORS:', origin);
+      callback(null, false); // ← esto bloquea sin lanzar error 500
     }
   }
 }));
