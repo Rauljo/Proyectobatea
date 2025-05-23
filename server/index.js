@@ -5,9 +5,21 @@ const cors = require('cors');
 const pool = require('./db');
 
 //app.use(cors());
+const allowedOrigins = [
+    'http://localhost:3000',
+    'https://proyectobatea.pages.dev/'
+];
+
 app.use(cors({
-    origin: 'http://localhost:3000'
-}))
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  }
+}));
+
 app.use(express.json());
 
 //Get bateas
