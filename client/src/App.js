@@ -1,13 +1,11 @@
-import React, { Fragment, useState } from "react";
 import {Route, Routes} from "react-router-dom";
 
 import './App.css';
 
-import Data_Insertion from './components/DataInsertion';
 import Navigation from "./components/Menu";
 import Insercion from "./pages/Insercion";
 import Visualizacion from "./pages/Visualizacion";
-import Vigencia_Alerts from "./pages/VigenciaAlerts";
+import VigenciaAlerts from "./pages/VigenciaAlerts";
 
 
 function App() {
@@ -19,7 +17,7 @@ function App() {
             <Route path="/" element={<Insercion />} />
             <Route path="/insercion" element={<Insercion />} />
             <Route path="/visualizacion" element={<Visualizacion />} />
-            <Route path="/alerts" element={<Vigencia_Alerts />} />
+            <Route path="/alerts" element={<VigenciaAlerts />} />
           </Routes>
       </div>
     </div>
