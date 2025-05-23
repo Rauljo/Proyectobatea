@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
     TextField,
     Button,
@@ -22,7 +22,7 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
-import Selector_Menu from './SelectorMenu.js';
+import SelectorMenu from './SelectorMenu.js';
 
 import axios from 'axios';
 import { BASE_ENDPOINT } from '../endpoint.js';
@@ -240,7 +240,7 @@ const InsertionForm = ({ bateas, batea, selectedCell, sectores, onManualCellSele
                 </DialogTitle>
                 <DialogContent dividers>
                     <FormControl fullWidth sx={{ mt: 2 }}>
-                        <Selector_Menu bateas={bateas} onSelectBatea={setDestinoBatea} />
+                        <SelectorMenu bateas={bateas} onSelectBatea={setDestinoBatea} />
                     </FormControl>
                     <Grid container spacing={2} sx={{ mt: 1 }}>
                         <Grid item xs={6}>

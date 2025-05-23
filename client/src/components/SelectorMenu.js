@@ -1,4 +1,4 @@
-import React, { Fragment, useState } from "react";
+import { Fragment, useState } from "react";
 import { Autocomplete, TextField } from "@mui/material";
 
 const SelectorMenu = ({ onSelectBatea, bateas }) => {
