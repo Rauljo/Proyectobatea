@@ -1,8 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import Grid from '@mui/material/Grid2';
-import { Box, Typography, TextField } from '@mui/material';
-import { BASE_ENDPOINT } from '../endpoint';
+import { Box, Typography } from '@mui/material';
 
 
 const MatrizSectores = ({ batea, bateaData }) => {
@@ -79,7 +76,7 @@ const MatrizSectores = ({ batea, bateaData }) => {
   );
 };
 
-const Info_Bateas = ({ batea, sectores }) => {
+const InfoBateas = ({ batea, sectores }) => {
   // Calcular totales si existen sectores
   const totals = sectores
     ? sectores.reduce(
@@ -157,7 +154,7 @@ const Info_Bateas = ({ batea, sectores }) => {
 };
 
 
-const Visualizar_Batea = ({ batea, bateaData }) => {
+const VisualizarBatea = ({ batea, bateaData }) => {
     //const [bateaData, setBateaData] = useState([]);
     //const [loading, setLoading] = useState(false);
 
@@ -170,5 +167,5 @@ const Visualizar_Batea = ({ batea, bateaData }) => {
 };
 
 
-export default Visualizar_Batea;
-export { Info_Bateas };
+export default VisualizarBatea;
+export { InfoBateas };

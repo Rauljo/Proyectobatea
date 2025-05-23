@@ -1,10 +1,10 @@
 import React from 'react';
 
-import Data_Insertion from '../components/Data_Insertion';
+import DataInsertion from '../components/DataInsertion';
 
 const Insercion = () => {
     return (
-        <Data_Insertion />
+        <DataInsertion />
     );
 }
 

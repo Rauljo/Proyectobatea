@@ -1,22 +1,21 @@
-import React, {Fragment, useState, useEffect } from 'react';
+import React, {useState, useEffect } from 'react';
 import { Box } from '@mui/material'; // Asegúrate de importar Box
 import axios from 'axios';
 import Grid from '@mui/material/Grid2';
 
 
-import Selector_Menu from './Selector_Menu.js';
-import Nueva_Batea from './Nueva_Batea.js';
-import Visualizar_Batea from './Visualizar_Batea.js';
-import Esquema_Batea from './Esquema_Batea.js';
-import { Info_Bateas } from './Visualizar_Batea';
-import Insertion_Form from './Insertion_Form.js';
-import { BASE_ENDPOINT } from '../endpoint';
+import SelectorMenu from './SelectorMenu.js';
+import NuevaBatea from './NuevaBatea.js';
+import EsquemaBatea from './EsquemaBatea.js';
+import { InfoBateas } from './VisualizarBatea.js';
+import InsertionForm from './InsertionForm.js';
+import { BASE_ENDPOINT } from '../endpoint.js';
 
 
 
 
 
-const Data_Insertion = () => {
+const DataInsertion = () => {
     const [selectedBatea, setSelected] = React.useState(null);
     const [selectedCell, setSelectedCell] = React.useState(null);
     const [bateaData, setBateaData] = useState(null);
@@ -91,13 +90,13 @@ const Data_Insertion = () => {
                     marginTop: '80px',
                 }}
             >
-                <Selector_Menu onSelectBatea={handleSelectBatea} bateas={bateas}/>
-                <Nueva_Batea />
+                <SelectorMenu onSelectBatea={handleSelectBatea} bateas={bateas}/>
+                <NuevaBatea />
             </Box>
 
             {selectedBatea && (
                 <>
-                    <Info_Bateas batea={selectedBatea} />
+                    <InfoBateas batea={selectedBatea} />
 
                     {/* Contenedor del bloque centrado */}
                     <Box
@@ -127,7 +126,7 @@ const Data_Insertion = () => {
                             boxShadow: 1,
                             }}
                         >
-                            <Esquema_Batea
+                            <EsquemaBatea
                             batea={selectedBatea}
                             selectedCell={selectedCell}
                             onCellSelect={handleManualCellSelect}
@@ -143,7 +142,7 @@ const Data_Insertion = () => {
                             boxShadow: 1,
                             }}
                         >
-                            <Insertion_Form
+                            <InsertionForm
                             batea={selectedBatea}
                             selectedCell={selectedCell}
                             sectores={bateaData}
@@ -161,4 +160,4 @@ const Data_Insertion = () => {
     );
 }
 
-export default Data_Insertion;
+export default DataInsertion;

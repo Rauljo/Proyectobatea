@@ -23,7 +23,7 @@ const formatInterval = (vigencia) => {
 };
 
 
-const Visualizar_Movimientos = ({batea}) => {
+const VisualizarMovimientos = ({batea}) => {
 
     const [movimientos, setMovimientos] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -102,5 +102,5 @@ const Visualizar_Movimientos = ({batea}) => {
     )
 }
 
-export default Visualizar_Movimientos;
+export default VisualizarMovimientos;
 

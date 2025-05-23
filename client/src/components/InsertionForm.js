@@ -22,13 +22,13 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
-import Selector_Menu from './Selector_Menu.js';
+import Selector_Menu from './SelectorMenu.js';
 
 import axios from 'axios';
-import { BASE_ENDPOINT } from '../endpoint';
+import { BASE_ENDPOINT } from '../endpoint.js';
 
 
-const Insertion_Form = ({ bateas, batea, selectedCell, sectores, onManualCellSelect, onSectorUpdate }) => {
+const InsertionForm = ({ bateas, batea, selectedCell, sectores, onManualCellSelect, onSectorUpdate }) => {
     const [movementType, setMovementType] = useState('entrada');
     const [selectedCuerdaType, setSelectedCuerdaType] = useState('');
     const [cantidad, setCantidad] = useState('');
@@ -288,4 +288,4 @@ const Insertion_Form = ({ bateas, batea, selectedCell, sectores, onManualCellSel
     );
 };
 
-export default Insertion_Form;
+export default InsertionForm;
