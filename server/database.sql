@@ -139,7 +139,7 @@ create or replace function actualizar_vigencia(new_mov movimientos, nuevo_valor 
 declare
     entrada RECORD;
 begin
-    INSERT INTO debug_log (context) VALUES ('new_mov: ' || new_mov.tipo_cuerda::text);
+    
 
     for entrada in 
         select *
@@ -148,7 +148,7 @@ begin
         order by fecha desc, id desc
     loop
 
-        INSERT INTO debug_log (context) VALUES ('entrada: ' || entrada::text);
+        
 
         -- Restamos a la cantidad actual lo que aporto ese movimiento
         nuevo_valor := nuevo_valor - entrada.cantidad;
