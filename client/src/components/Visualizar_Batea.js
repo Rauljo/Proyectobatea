@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Grid from '@mui/material/Grid2';
 import { Box, Typography, TextField } from '@mui/material';
+import { BASE_ENDPOINT } from '../endpoint';
+
 
 const MatrizSectores = ({ batea, bateaData }) => {
   const totalRow = batea.row_sector;

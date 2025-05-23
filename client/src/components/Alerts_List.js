@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { TextField, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography } from '@mui/material';
 import axios from 'axios';
+import { BASE_ENDPOINT } from '../endpoint';
 
 const formatInterval = (vigencia) => {
   if (!vigencia) return '';
@@ -24,7 +25,7 @@ const Alerts_List = () => {
     }
 
     try {
-      const response = await axios.get(`http://localhost:5010/alerts/${limit}`);
+      const response = await axios.get(`${BASE_ENDPOINT}/alerts/${limit}`);
       setAlerts(response.data);
     } catch (err) {
       console.error('Error al obtener alertas:', err);

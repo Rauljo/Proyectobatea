@@ -8,6 +8,8 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Stack from '@mui/material/Stack';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel, Paper } from '@mui/material';
+import { BASE_ENDPOINT } from '../endpoint';
+
 
 
 
@@ -36,7 +38,7 @@ export default function FormDialog() {
     const data = { name, polygon, row, col };
 
     try {
-        const response = await axios.post("http://localhost:5010/bateas", data);
+        const response = await axios.post(`${BASE_ENDPOINT}/bateas`, data);
 
         if (response.status == 200 || response.status == 201) {
             console.log("Batea añadida correctamente");
