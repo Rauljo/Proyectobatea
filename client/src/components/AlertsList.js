@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { TextField, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography } from '@mui/material';
 import axios from 'axios';
 import { BASE_ENDPOINT } from '../endpoint';
+import { useSession } from '../context/SessionContext';
 
 const formatInterval = (vigencia) => {
   if (!vigencia) return '';
@@ -17,6 +18,7 @@ const formatInterval = (vigencia) => {
 const AlertsList = () => {
   const [limit, setLimit] = useState('');
   const [alerts, setAlerts] = useState([]);
+  const { session } = useSession();
 
   const handleFetchAlerts = async () => {
     if (!limit || isNaN(limit)) {
@@ -25,7 +27,13 @@ const AlertsList = () => {
     }
 
     try {
-      const response = await axios.get(`${BASE_ENDPOINT}/alerts/${limit}`);
+      const response = await axios.get(`${BASE_ENDPOINT}/alerts/${limit}`,
+        {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        }
+      );
       setAlerts(response.data);
     } catch (err) {
       console.error('Error al obtener alertas:', err);

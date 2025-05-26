@@ -26,12 +26,12 @@ const DataInsertion = () => {
 
     const [bateas, setBateas] = useState([]);
 
-    const { session, load } = useSession();
+    const { session } = useSession();
 
     useEffect(() => {
         const fetchBateas = async () => {
             try {
-                //console.log(session);
+                console.log("Tried selecting bateas: ", session);
                 const response = await axios.get(`${BASE_ENDPOINT}/bateas`,
                     {
                         headers: {
@@ -46,7 +46,7 @@ const DataInsertion = () => {
         };
 
         fetchBateas();
-    }, []);
+    }, [session]);
 
 
 
@@ -74,7 +74,13 @@ const DataInsertion = () => {
         const fetchBateaData = async () => {
             setLoading(true);
             try {
-                const response = await axios.get(`${BASE_ENDPOINT}/sectores/${selectedBatea.id}`);
+                const response = await axios.get(`${BASE_ENDPOINT}/sectores/${selectedBatea.id}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${session.access_token}`,
+                        }
+                    }
+                );
                 setBateaData(response.data);
             } catch (error) {
                 console.error("Error fetching batea data:", error.message);
@@ -83,7 +89,7 @@ const DataInsertion = () => {
         };
 
         fetchBateaData();
-    }, [selectedBatea]); // Solo se ejecuta cuando seleccionamos una batea
+    }, [selectedBatea, session]); // Solo se ejecuta cuando seleccionamos una batea
     
 
     if (loading) {

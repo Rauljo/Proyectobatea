@@ -9,6 +9,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Stack from '@mui/material/Stack';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
 import { BASE_ENDPOINT } from '../endpoint';
+import { useSession } from '../context/SessionContext';
 
 
 
@@ -22,6 +23,7 @@ export default function FormDialog() {
   const[polygon, setPolygon] = React.useState("");
   const[row, setRow] = React.useState("");
   const[col, setCol] = React.useState("");
+  const { session } = useSession();
 
 
 
@@ -38,7 +40,13 @@ export default function FormDialog() {
     const data = { name, polygon, row, col };
 
     try {
-        const response = await axios.post(`${BASE_ENDPOINT}/bateas`, data);
+        const response = await axios.post(`${BASE_ENDPOINT}/bateas`, data,
+            {
+                headers: {
+                    Authorization: `Bearer ${session.access_token}`,
+                },
+            }
+        );
 
         if (response.status === 200 || response.status === 201) {
             console.log("Batea añadida correctamente");

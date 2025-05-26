@@ -8,6 +8,7 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import { BASE_ENDPOINT } from '../endpoint';
+import { useSession } from '../context/SessionContext';
 
 
 const formatInterval = (vigencia) => {
@@ -26,6 +27,7 @@ const VisualizarMovimientos = ({batea}) => {
 
     const [movimientos, setMovimientos] = useState([]);
     const [loading, setLoading] = useState(true);
+    const { session } = useSession();
 
     useEffect(() => {
         if (!batea) return;
@@ -33,7 +35,13 @@ const VisualizarMovimientos = ({batea}) => {
         const fetchMovimientos = async () => {
             setLoading(true);
             try {
-                const response = await axios.get(`${BASE_ENDPOINT}/movimientos/${batea.id}?vigencia=true`);
+                const response = await axios.get(`${BASE_ENDPOINT}/movimientos/${batea.id}?vigencia=true`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${session.access_token}`,
+                        },
+                    }
+                );
                 setMovimientos(response.data);
                 console.log(response.data);
             } catch (error) {
@@ -44,7 +52,7 @@ const VisualizarMovimientos = ({batea}) => {
 
         fetchMovimientos();
     }
-    , [batea]);
+    , [batea, session]);
 
     return (
         <div>
