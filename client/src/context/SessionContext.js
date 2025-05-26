@@ -15,9 +15,14 @@ export const SessionProvider = ({ children }) => {
     });
 
     // Escuchar cambios en la sesión (login/logout)
-    const { } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: {subscription} } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
     });
+
+    return () => {
+      // Limpiar el listener al desmontar el componente
+      subscription.unsubscribe();
+    }
 
 
   }, []);
