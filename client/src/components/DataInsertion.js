@@ -11,6 +11,9 @@ import { InfoBateas } from './VisualizarBatea.js';
 import InsertionForm from './InsertionForm.js';
 import { BASE_ENDPOINT } from '../endpoint.js';
 
+import { useSession } from '../context/SessionContext';
+
+
 
 
 
@@ -23,10 +26,19 @@ const DataInsertion = () => {
 
     const [bateas, setBateas] = useState([]);
 
+    const { session, load } = useSession();
+
     useEffect(() => {
         const fetchBateas = async () => {
             try {
-                const response = await axios.get(`${BASE_ENDPOINT}/bateas`);
+                //console.log(session);
+                const response = await axios.get(`${BASE_ENDPOINT}/bateas`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${session.access_token}`,
+                        }
+                    }
+                );
                 setBateas(response.data);
             } catch (error) {
                 console.error("Error fetching bateas:", error.message);
