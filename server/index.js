@@ -6,7 +6,7 @@ const pool = require('./db');
 
 const authMiddleware = require('./authMiddleware');
 
-app.use(authMiddleware);
+
 
 //app.use(cors());
 /*const allowedOrigins = [
@@ -28,6 +28,8 @@ app.use(cors({
 }));*/
 
 app.use(cors());
+
+app.use(authMiddleware);
 
 app.use(express.json());
 
