@@ -1,4 +1,4 @@
-import {createClient} from '@supabase/supabase-js';
+const { createClient } = require('@supabase/supabase-js');
 
 const supabaseUrl = 'https://wpcbligedufvtiwugaso.supabase.co';
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
