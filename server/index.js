@@ -4,6 +4,10 @@ const cors = require('cors');
 
 const pool = require('./db');
 
+const authMiddleware = require('./authMiddleware');
+
+app.use(authMiddleware);
+
 //app.use(cors());
 const allowedOrigins = [
     'http://localhost:3000',
