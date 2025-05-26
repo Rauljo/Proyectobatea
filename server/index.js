@@ -15,15 +15,16 @@ const allowedOrigins = [
 ];
 
 app.use(cors({
-  origin: function (origin, callback) {
-    // Permitir sin origin (Postman, servidor interno, etc.)
+  origin: function(origin, callback) {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.warn('Blocked by CORS:', origin);
-      callback(null, false); // ← esto bloquea sin lanzar error 500
+      callback(new Error('Not allowed by CORS'));
     }
-  }
+  },
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization'], // Importante para tokens
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 }));
 
 app.use(express.json());
