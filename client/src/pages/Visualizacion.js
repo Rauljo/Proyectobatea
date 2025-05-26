@@ -9,17 +9,26 @@ import VisualizarMovimientos from '../components/VisualizarMovimientos';
 import { InfoBateas } from '../components/VisualizarBatea';
 import { BASE_ENDPOINT } from '../endpoint';
 
+import { useSession } from '../context/SessionContext';
+
 
 
 const Visualizacion = () => {
     const [selectedBatea, setSelected] = useState(null);
     const [bateas, setBateas] = useState([]);
     const [bateaData, setBateaData] = useState(null);
+    const { session } = useSession();
 
     useEffect(() => {
         const fetchBateas = async () => {
             try {
-                const response = await fetch(`${BASE_ENDPOINT}/bateas`);
+                const response = await fetch(`${BASE_ENDPOINT}/bateas`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${session.access_token}`,
+                        },
+                    }
+                );
                 const data = await response.json();
                 setBateas(data);
             } catch (error) {
@@ -28,7 +37,7 @@ const Visualizacion = () => {
         };
 
         fetchBateas();
-    }, []);
+    }, [session]);
 
     const handleSelectBatea = (batea) => {
         setSelected(batea);
@@ -38,7 +47,13 @@ const Visualizacion = () => {
         const fetchBateaData = async () => {
             if (!selectedBatea) return;
             try {
-                const response = await fetch(`${BASE_ENDPOINT}/sectores/${selectedBatea.id}`);
+                const response = await fetch(`${BASE_ENDPOINT}/sectores/${selectedBatea.id}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${session.access_token}`,
+                        },
+                    }
+                );
                 const data = await response.json();
                 setBateaData(data);
             } catch (error) {
@@ -47,7 +62,7 @@ const Visualizacion = () => {
         }
 
         fetchBateaData();
-    }, [selectedBatea]);
+    }, [selectedBatea, session]);
 
     return (
         <div>

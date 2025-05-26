@@ -26,6 +26,7 @@ import SelectorMenu from './SelectorMenu.js';
 
 import axios from 'axios';
 import { BASE_ENDPOINT } from '../endpoint.js';
+import { useSession } from '../context/SessionContext.js';
 
 
 const InsertionForm = ({ bateas, batea, selectedCell, sectores, onManualCellSelect, onSectorUpdate }) => {
@@ -39,6 +40,7 @@ const InsertionForm = ({ bateas, batea, selectedCell, sectores, onManualCellSele
     const [destinoBatea, setDestinoBatea] = useState('');
     const [destinoRow, setDestinoRow] = useState('');
     const [destinoCol, setDestinoCol] = useState('');
+    const { session } = useSession();
 
 
     // Sincronizar inputs con la celda seleccionada
@@ -95,7 +97,13 @@ const InsertionForm = ({ bateas, batea, selectedCell, sectores, onManualCellSele
 
             // Enviar movimiento base
             try {
-                const response = await axios.post(`${BASE_ENDPOINT}/movimientos`, payload);
+                const response = await axios.post(`${BASE_ENDPOINT}/movimientos`, payload,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${session.access_token}`,
+                        },
+                    }
+                );
                 console.log('Movimiento enviado:', response.data);
 
             } catch (error) {
@@ -112,7 +120,13 @@ const InsertionForm = ({ bateas, batea, selectedCell, sectores, onManualCellSele
                 payload.tipo_operacion = 'entrada';
                 payload.nota = `Intercambio con Batea ${bateaId} en (${row + 1}, ${col + 1})`;
 
-                const response = await axios.post(`${BASE_ENDPOINT}/movimientos`, payload);
+                const response = await axios.post(`${BASE_ENDPOINT}/movimientos`, payload,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${session.access_token}`,
+                        },
+                    }
+                );
                 console.log('Movimiento de entrada enviado:', response.data);
 
             };

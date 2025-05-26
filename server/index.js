@@ -9,7 +9,7 @@ const authMiddleware = require('./authMiddleware');
 
 
 //app.use(cors());
-/*const allowedOrigins = [
+const allowedOrigins = [
     'http://localhost:3000',
     'https://proyectobatea.pages.dev'
 ];
@@ -25,9 +25,7 @@ app.use(cors({
   credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization'], // Importante para tokens
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-}));*/
-
-app.use(cors());
+}));
 
 app.use(authMiddleware);
 
