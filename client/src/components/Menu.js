@@ -1,13 +1,21 @@
 import { useState } from 'react';
 import { AppBar, Toolbar, Typography, Tabs, Tab, Box } from '@mui/material';
 import { Link } from "react-router-dom";
+import supabase from '../helper/supabase';
+import { useNavigate } from 'react-router-dom';
 
 
 const Navigation = () => {
     const [value, setValue] = useState(0);
+    const navigate = useNavigate();
 
     const handleChange = (event, newValue) => {
         setValue(newValue);
+    };
+
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        navigate("/login");
     };
 
     return (
@@ -27,7 +35,10 @@ const Navigation = () => {
                     <Tab label="Inserción" sx={{ fontWeight: 'bold' }} component={Link} to="/insercion" />
                     <Tab label="Visualización" sx={{ fontWeight: 'bold' }} component={Link} to="/visualizacion" />
                     <Tab label="Alertas" sx={{ fontWeight: 'bold' }} component={Link} to="/alerts" />
+                    <Tab label="Cerrar Sesión" sx= {{ fontWeight: 'bold' }} onClick={handleLogout} />
                 </Tabs>
+
+                
             </Toolbar>
         </AppBar>
     );
