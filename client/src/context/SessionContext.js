@@ -15,7 +15,7 @@ export const SessionProvider = ({ children }) => {
     });
 
     // Escuchar cambios en la sesión (login/logout)
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
     });
 
