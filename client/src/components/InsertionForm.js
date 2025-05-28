@@ -76,6 +76,7 @@ const InsertionForm = ({ bateas, batea, selectedCell, sectores, onManualCellSele
         const [row, col] = selectedCell;
         const bateaId = batea.id;
         const cantidadParsed = parseInt(cantidad);
+        const bateaName = batea.name;
 
         try {
 
@@ -91,7 +92,7 @@ const InsertionForm = ({ bateas, batea, selectedCell, sectores, onManualCellSele
 
             if (movementType === 'intercambio' && destino) {
                 payload.tipo_operacion = 'salida';
-                payload.nota = `Intercambio con Batea ${destino.bateaId} en (${destino.row + 1}, ${destino.col + 1})`;
+                payload.nota = `Intercambio con Batea ${destino.bateaName} (${destino.bateaId}) en (${destino.row + 1}, ${destino.col + 1})`;
             };
             console.log('Payload:', payload);
 
@@ -112,7 +113,7 @@ const InsertionForm = ({ bateas, batea, selectedCell, sectores, onManualCellSele
                 payload.col = destino.col;
                 payload.batea = destino.bateaId;
                 payload.tipo_operacion = 'entrada';
-                payload.nota = `Intercambio con Batea ${bateaId} en (${row + 1}, ${col + 1})`;
+                payload.nota = `Intercambio con Batea ${bateaName} (${bateaId}) en (${row + 1}, ${col + 1})`;
 
                 const response = await axios.post(`${BASE_ENDPOINT}/movimientos`, payload,
                     {
@@ -287,6 +288,7 @@ const InsertionForm = ({ bateas, batea, selectedCell, sectores, onManualCellSele
                             console.log(destinoBatea, parseInt(destinoCol)-1, parseInt(destinoRow)-1) ||
                             enviarMovimiento({
                                 bateaId: destinoBatea.id,
+                                bateaName: destinoBatea.name,
                                 row: parseInt(destinoRow) - 1,
                                 col: parseInt(destinoCol) - 1
                             })

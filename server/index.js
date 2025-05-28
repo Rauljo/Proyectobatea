@@ -81,18 +81,18 @@ app.post("/movimientos", async (req, res) => {
 
         let newMovimiento;
 
-        //Check if nota contains 'nota' contains the word 'Intercambio' and if tipo_operacion is 'entrada'
+        //Check if nota contains 'nota' contains the word 'Intercambio' and if tipo_operacion is 'entrada. Then we will determine fecha_previa
         if (nota && nota.toLowerCase().includes('intercambio') && tipo_operacion === 'entrada') {
             console.log("AJHAJAJAJA");
             //nota will have the follwowing format: 'Intercambio con Batea id en sector (row, col)'. I want to obtain id, row and col
             console.log("NOTA", nota);
-            const regex = /Intercambio con Batea (\d+) en \((\d+), (\d+)\)/;
+            const regex = /Intercambio con Batea (.+) \((\d+)\) en \((\d+), (\d+)\)/;
             const match = nota.match(regex);
             console.log("MATCH", match);
             if (match) {
-                req.batea_previa = parseInt(match[1]);
-                req.row_intercambio = parseInt(match[2])-1;
-                req.col_intercambio = parseInt(match[3])-1;
+                req.batea_previa = parseInt(match[2]);
+                req.row_intercambio = parseInt(match[3])-1;
+                req.col_intercambio = parseInt(match[4])-1;
 
                 console.log("HOLA", req.batea_previa, req.row_intercambio, req.col_intercambio);
 
