@@ -31,7 +31,6 @@ const DataInsertion = () => {
     useEffect(() => {
         const fetchBateas = async () => {
             try {
-                console.log("Tried selecting bateas: ", session);
                 const response = await axios.get(`${BASE_ENDPOINT}/bateas`,
                     {
                         headers: {
