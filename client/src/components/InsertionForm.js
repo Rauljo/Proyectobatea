@@ -94,18 +94,16 @@ const InsertionForm = ({ bateas, batea, selectedCell, sectores, onManualCellSele
                 payload.tipo_operacion = 'salida';
                 payload.nota = `Intercambio con Batea ${destino.bateaName} (${destino.bateaId}) en (${destino.row + 1}, ${destino.col + 1})`;
             };
-            console.log('Payload:', payload);
 
             // Enviar movimiento base
             try {
-                const response = await axios.post(`${BASE_ENDPOINT}/movimientos`, payload,
+                await axios.post(`${BASE_ENDPOINT}/movimientos`, payload,
                     {
                         headers: {
                             Authorization: `Bearer ${session.access_token}`,
                         },
                     }
                 );
-                console.log('Movimiento enviado:', response.data);
 
                 //Ahora, si hay un intercambio, enviamos el movimiento de entrada
             if (movementType === 'intercambio' && destino) {
@@ -115,14 +113,13 @@ const InsertionForm = ({ bateas, batea, selectedCell, sectores, onManualCellSele
                 payload.tipo_operacion = 'entrada';
                 payload.nota = `Intercambio con Batea ${bateaName} (${bateaId}) en (${row + 1}, ${col + 1})`;
 
-                const response = await axios.post(`${BASE_ENDPOINT}/movimientos`, payload,
+                await axios.post(`${BASE_ENDPOINT}/movimientos`, payload,
                     {
                         headers: {
                             Authorization: `Bearer ${session.access_token}`,
                         },
                     }
                 );
-                console.log('Movimiento de entrada enviado:', response.data);
 
             };
 
@@ -153,7 +150,6 @@ const InsertionForm = ({ bateas, batea, selectedCell, sectores, onManualCellSele
 
         if (movementType === 'intercambio') {
             setDialogOpen(true);  // abrir diálogo
-            console.log('Intercambio seleccionado');
         } else {
             enviarMovimiento();  // entrada o salida normales
         }
@@ -285,7 +281,6 @@ const InsertionForm = ({ bateas, batea, selectedCell, sectores, onManualCellSele
                     </Button>
                     <Button
                         onClick={() =>
-                            console.log(destinoBatea, parseInt(destinoCol)-1, parseInt(destinoRow)-1) ||
                             enviarMovimiento({
                                 bateaId: destinoBatea.id,
                                 bateaName: destinoBatea.name,

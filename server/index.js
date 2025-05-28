@@ -77,24 +77,19 @@ app.post("/movimientos", async (req, res) => {
     try {
         const { row, col, batea, tipo_cuerda, cantidad, tipo_operacion, nota } = req.body;
 
-        console.log(req.body);
 
         let newMovimiento;
 
         //Check if nota contains 'nota' contains the word 'Intercambio' and if tipo_operacion is 'entrada. Then we will determine fecha_previa
         if (nota && nota.toLowerCase().includes('intercambio') && tipo_operacion === 'entrada') {
-            console.log("AJHAJAJAJA");
             //nota will have the follwowing format: 'Intercambio con Batea id en sector (row, col)'. I want to obtain id, row and col
-            console.log("NOTA", nota);
             const regex = /Intercambio con Batea (.+) \((\d+)\) en \((\d+), (\d+)\)/;
             const match = nota.match(regex);
-            console.log("MATCH", match);
             if (match) {
                 req.batea_previa = parseInt(match[2]);
                 req.row_intercambio = parseInt(match[3])-1;
                 req.col_intercambio = parseInt(match[4])-1;
 
-                console.log("HOLA", req.batea_previa, req.row_intercambio, req.col_intercambio);
 
                 const movimientoPrevio = await pool.query(`
                     SELECT COALESCE(fecha_previa, fecha) as fecha FROM movimientos
@@ -104,13 +99,8 @@ app.post("/movimientos", async (req, res) => {
                     [req.row_intercambio, req.col_intercambio, req.batea_previa, tipo_cuerda]
                 );
 
-                //TODO: COMPROBAR QUE HAYA CUERDAS DE LAS QUE SE QUIERE QUITAR... PARA HACER LOS MOVIMIENTOS... 
 
-                if (movimientoPrevio.rows.length > 0) {
-                    console.log("Movimiento previo encontrado:", movimientoPrevio.rows[0]);
-                } else {
-                    console.log("No se encontró movimiento previo");
-                }
+
 
                 const fecha_previa = movimientoPrevio.rows.length > 0 ? movimientoPrevio.rows[0].fecha : null;
 

@@ -49,7 +49,6 @@ export default function FormDialog() {
         );
 
         if (response.status === 200 || response.status === 201) {
-            console.log("Batea añadida correctamente");
             window.location.reload();
         }
     } catch (error) {
