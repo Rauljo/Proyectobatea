@@ -106,13 +106,7 @@ const InsertionForm = ({ bateas, batea, selectedCell, sectores, onManualCellSele
                 );
                 console.log('Movimiento enviado:', response.data);
 
-            } catch (error) {
-                const message = error.response?.data?.error || "Error al enviar movimiento";
-                alert(`Error: ${message}`);
-            }
-            
-
-            //Ahora, si hay un intercambio, enviamos el movimiento de entrada
+                //Ahora, si hay un intercambio, enviamos el movimiento de entrada
             if (movementType === 'intercambio' && destino) {
                 payload.row = destino.row;
                 payload.col = destino.col;
@@ -131,6 +125,13 @@ const InsertionForm = ({ bateas, batea, selectedCell, sectores, onManualCellSele
 
             };
 
+            } catch (error) {
+                const message = error.response?.data?.error || "Error al enviar movimiento";
+                alert(`Error: ${message}`);
+            }
+            
+
+            
             if (onSectorUpdate) onSectorUpdate(row, col);
 
             // Limpiar estados
