@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AppBar, Toolbar, Typography, Tabs, Tab, Box } from '@mui/material';
+import { AppBar, Toolbar, Typography, Tabs, Tab } from '@mui/material';
 import { Link } from "react-router-dom";
 import supabase from '../helper/supabase';
 import { useNavigate } from 'react-router-dom';
