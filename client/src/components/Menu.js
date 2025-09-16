@@ -20,7 +20,7 @@ const Navigation = () => {
 
     return (
         <AppBar position="static">
-            <Toolbar sx={{ display: 'flex', justifyContent: 'flex-start', gap: 50 }}>
+            <Toolbar sx={{ display: 'flex', justifyContent: 'flex-start', gap: 10 }}>
                 {/* "Bateas" alineado a la izquierda */}
                 <Link to="/" style={{ textDecoration: 'none', color: 'white' }}>
                     <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
@@ -28,7 +28,7 @@ const Navigation = () => {
                     </Typography>
                 </Link>
                 {/* Espacio entre "Bateas" y las opciones de menú */}
-                <Box sx={{ width: '50px' }} />
+                {/* <Box sx={{ width: '50px' }} /> */}
 
                 {/* Opciones de menú alineadas a la izquierda y en negrita */}
                 <Tabs value={value} onChange={handleChange} textColor="inherit">
