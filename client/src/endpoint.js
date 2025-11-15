@@ -1,5 +1,5 @@
-export const BASE_ENDPOINT = "https://proyectobatea.onrender.com"
-export const PORTS = 5010
+export const BASE_ENDPOINT = process.env.REACT_APP_BASE_ENDPOINT
+export const PORTS = process.env.REACT_APP_PORTS
 
 export const BASE_ROUTE = `${BASE_ENDPOINT}:${PORTS}`
 
