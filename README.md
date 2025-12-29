@@ -6,7 +6,7 @@ Projects Webpage: https://victorious-abacus-429.notion.site/Mussels-Growth-Contr
 
 Execute 
 
-    nodemon index
+    npm run dev
 
 Server Folder terminal
 
