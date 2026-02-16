@@ -1,0 +1,32 @@
+name: Weekly Vigencia Report
+
+on:
+  schedule:
+    # Lunes a las 08:00 UTC → ajusta según tu zona
+    - cron: '0 8 * * 1'
+  workflow_dispatch:  # Permite ejecutar manualmente si quieres
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Obtener el código del repo
+      - uses: actions/checkout@v4
+
+      # 2️⃣ Instalar Node
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      # 3️⃣ Instalar dependencias
+      - run: npm install
+
+      # 4️⃣ Ejecutar el script de informes
+      - run: node reports/SendReports.js
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
