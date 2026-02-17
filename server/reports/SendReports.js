@@ -13,7 +13,7 @@ const supabaseKey = process.env.SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // 6 meses ≈ 180 días
-const SIX_MONTHS_MS = 1000 * 60 * 60 * 24 * 30 * 6
+const SIX_MONTHS_MS = 1000 * 60 * 60 * 24 * 30 * 0.01
 
 // ==========================
 // 2. Obtener movimientos vigentes
