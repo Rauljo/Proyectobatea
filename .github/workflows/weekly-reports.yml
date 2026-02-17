@@ -2,6 +2,7 @@ name: Weekly Vigencia Report
 
 on:
   workflow_dispatch:   # manual por ahora
+  push:
 
 jobs:
   report:
