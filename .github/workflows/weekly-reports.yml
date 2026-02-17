@@ -26,7 +26,7 @@ jobs:
       # 4️⃣ Ejecutar el script
       - name: Run weeklyVigencia
         working-directory: ./server
-        run: node ../reports/sendReports.js
+        run: node ../reports/SendReports.js
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
