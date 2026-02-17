@@ -27,16 +27,22 @@ async function getVigentes() {
       cantidad,
       sector_row,
       sector_col,
+      sector_batea,
       fecha,
       fecha_previa,
-      vigente,
-      bateas:sector_batea ( name )
+      vigente
     `)
     .eq('vigente', true)
+    .order('fecha', { ascending: true }); // opcional: primero las más antiguas
 
-  if (error) throw error
-  return data
+  if (error) {
+    console.error("Error al obtener movimientos vigentes:", error);
+    throw error;
+  }
+
+  return data;
 }
+
 
 // ==========================
 // 3. Calcular vigencia (misma lógica que SQL)
