@@ -1,14 +1,12 @@
 name: Weekly Vigencia Report
 
 on:
-  schedule:
-    # Lunes a las 08:00 UTC → ajusta según tu zona
-    - cron: '0 8 * * 1'
   workflow_dispatch:  # Permite ejecutar manualmente si quieres
 
 jobs:
   report:
     runs-on: ubuntu-latest
+    environment: dev
 
     steps:
       # 1️⃣ Obtener el código del repo
