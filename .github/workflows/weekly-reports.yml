@@ -1,7 +1,7 @@
 name: Weekly Vigencia Report
 
 on:
-  workflow_dispatch:  # Permite ejecutar manualmente si quieres
+  workflow_dispatch:   # manual por ahora
 
 jobs:
   report:
@@ -9,7 +9,7 @@ jobs:
     environment: dev
 
     steps:
-      # 1️⃣ Obtener el código del repo
+      # 1️⃣ Clonar el repo
       - uses: actions/checkout@v4
 
       # 2️⃣ Instalar Node
@@ -17,14 +17,18 @@ jobs:
         with:
           node-version: 18
 
-      # 3️⃣ Instalar dependencias
-      - run: npm install
+      # 3️⃣ Instalar dependencias de server
+      - name: Install server dependencies
+        working-directory: ./server
+        run: npm install
 
-      # 4️⃣ Ejecutar el script de informes
-      - run: node reports/SendReports.js
+      # 4️⃣ Ejecutar el script
+      - name: Run weeklyVigencia
+        working-directory: ./server
+        run: node ../reports/weeklyVigencia.js
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
           EMAIL_TO: ${{ secrets.EMAIL_TO }}
