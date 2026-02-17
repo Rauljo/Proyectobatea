@@ -1,5 +1,5 @@
-import { createClient } from '@supabase/supabase-js';
-import nodemailer from 'nodemailer';
+const { createClient } = require('@supabase/supabase-js');
+const nodemailer = require('nodemailer');
 
 // Initialize Supabase client
 const supabaseUrl = process.env.SUPABASE_URL;
