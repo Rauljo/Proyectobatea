@@ -1,6 +1,12 @@
 const { createClient } = require('@supabase/supabase-js');
 const nodemailer = require('nodemailer');
 
+console.log("SUPABASE_URL:", !!process.env.SUPABASE_URL);
+console.log("SUPABASE_KEY:", !!process.env.SUPABASE_ANON_KEY);
+console.log("SMTP_USER:", !!process.env.SMTP_USER);
+console.log("EMAIL_TO:", !!process.env.EMAIL_TO);
+
+
 // Initialize Supabase client
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_ANON_KEY;
