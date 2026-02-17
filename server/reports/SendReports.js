@@ -131,14 +131,14 @@ async function sendEmail(html) {
     port: 587,
     secure: false,
     auth: {
-      user: SMTP_USER,
-      pass: SMTP_PASS
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS
     }
   })
 
   await transporter.sendMail({
-    from: `"Informe bateas" <${SMTP_USER}>`,
-    to: EMAIL_TO,
+    from: `"Informe bateas" <${process.env.SMTP_USER}>`,
+    to: process.env.EMAIL_TO,
     subject: 'Informe semanal de vigencia de cuerdas',
     html
   })
