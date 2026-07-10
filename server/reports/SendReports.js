@@ -13,7 +13,7 @@ const supabaseKey = process.env.SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // 6 meses ≈ 180 días
-const SIX_MONTHS_MS = 1000 * 60 * 60 * 24 * 30 * 0.01
+const SIX_MONTHS_MS = 1000 * 60 * 60 * 24 * 30 * 6
 
 // ==========================
 // 2. Obtener movimientos vigentes
@@ -43,6 +43,21 @@ async function getVigentes() {
   return data;
 }
 
+// Mapa id -> nombre de batea (movimientos.sector_batea no es FK directa a bateas,
+// así que no se puede embeber; lo resolvemos con una consulta aparte).
+async function getBateasMap() {
+  const { data, error } = await supabase
+    .from('bateas')
+    .select('id, name');
+
+  if (error) {
+    console.error("Error al obtener bateas:", error);
+    throw error;
+  }
+
+  return new Map(data.map(b => [b.id, b.name]));
+}
+
 
 // ==========================
 // 3. Calcular vigencia (misma lógica que SQL)
@@ -63,11 +78,15 @@ function formatMeses(ms) {
 // 4. Filtrar cuerdas > 6 meses
 // ==========================
 async function getOldCuerdas() {
-  const movimientos = await getVigentes()
+  const [movimientos, bateasMap] = await Promise.all([
+    getVigentes(),
+    getBateasMap()
+  ])
 
   return movimientos
     .map(m => ({
       ...m,
+      batea_name: bateasMap.get(m.sector_batea) ?? '-',
       vigenciaMs: getVigenciaMs(m)
     }))
     .filter(m => m.vigenciaMs >= SIX_MONTHS_MS)
@@ -90,10 +109,10 @@ function generateHtml(cuerdas) {
 
     return `
       <tr>
-        <td>${m.bateas?.name ?? '-'}</td>
+        <td>${m.batea_name ?? '-'}</td>
         <td>${m.id}</td>
         <td>${m.tipo_cuerda}</td>
-        <td>${m.sector_row} / ${m.sector_col}</td>
+        <td>${m.sector_row + 1} / ${m.sector_col + 1}</td>
         <td>${inicio.toLocaleDateString()}</td>
         <td><strong>${meses}</strong> meses</td>
       </tr>
