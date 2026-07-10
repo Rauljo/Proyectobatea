@@ -197,7 +197,7 @@ app.get("/alerts/:limit", async (req, res) => {
     try {
         const { limit } = req.params;
         const alerts = await pool.query(`
-            SELECT b.name, m.id, tipo_cuerda, cantidad, operacion, vigente, sector_row, sector_col, fecha, fecha_previa, nota, vigente, now() - COALESCE(fecha_previa, fecha) as vigencia
+            SELECT b.name, b.col_sector, m.id, tipo_cuerda, cantidad, operacion, vigente, sector_row, sector_col, fecha, fecha_previa, nota, vigente, now() - COALESCE(fecha_previa, fecha) as vigencia
             FROM movimientos m join bateas b on m.sector_batea = b.id
             WHERE m.vigente = true
             ORDER BY vigencia DESC, id DESC

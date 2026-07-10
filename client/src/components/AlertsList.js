@@ -3,6 +3,7 @@ import { TextField, Button, Table, TableBody, TableCell, TableContainer, TableHe
 import axios from 'axios';
 import { BASE_ENDPOINT } from '../endpoint';
 import { useSession } from '../context/SessionContext';
+import { getSectorId } from '../helper/sector';
 
 const formatInterval = (vigencia) => {
   if (!vigencia) return '';
@@ -83,7 +84,7 @@ const AlertsList = () => {
                   <TableCell>{row.tipo_cuerda}</TableCell>
                   <TableCell>{row.cantidad}</TableCell>
                   <TableCell>{row.operacion}</TableCell>
-                  <TableCell>{`(${row.sector_row}, ${row.sector_col})`}</TableCell>
+                  <TableCell>{getSectorId(row.sector_row, row.sector_col, row.col_sector)}</TableCell>
                   <TableCell>{new Date(row.fecha).toLocaleString()}</TableCell>
                   <TableCell>{formatInterval(row.vigencia)}</TableCell>
                 </TableRow>

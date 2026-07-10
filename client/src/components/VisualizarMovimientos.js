@@ -9,6 +9,7 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import { BASE_ENDPOINT } from '../endpoint';
 import { useSession } from '../context/SessionContext';
+import { getSectorId } from '../helper/sector';
 
 
 const formatInterval = (vigencia) => {
@@ -76,7 +77,7 @@ const VisualizarMovimientos = ({batea}) => {
                     {movimientos.map((movimiento) => (
                         <TableRow key={movimiento.id}>
                         <TableCell>{new Date(movimiento.fecha).toISOString().split('T')[0]}</TableCell>
-                        <TableCell>{movimiento.sector_row+1}-{movimiento.sector_col+1}</TableCell>
+                        <TableCell>{getSectorId(movimiento.sector_row, movimiento.sector_col, batea.col_sector)}</TableCell>
                         <TableCell>{movimiento.tipo_cuerda}</TableCell>
                         <TableCell>{movimiento.cantidad}</TableCell>
                         <TableCell

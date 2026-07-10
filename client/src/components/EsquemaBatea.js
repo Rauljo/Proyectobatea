@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { getSectorId } from '../helper/sector';
 
 
 const EsquemaBatea = ({ batea, selectedCell, onCellSelect }) => {
@@ -51,7 +52,7 @@ const EsquemaBatea = ({ batea, selectedCell, onCellSelect }) => {
                                     fontWeight: 'bold',
                                 }}
                             >
-                                {rowIdx + 1} - {colIdx + 1}
+                                {getSectorId(rowIdx, colIdx, cols)}
                             </div>
                         );
                     })

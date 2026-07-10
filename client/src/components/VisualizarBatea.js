@@ -1,5 +1,6 @@
 import Grid from '@mui/material/Grid2';
 import { Box, Typography } from '@mui/material';
+import { getSectorId } from '../helper/sector';
 
 
 const MatrizSectores = ({ batea, bateaData }) => {
@@ -42,7 +43,7 @@ const MatrizSectores = ({ batea, bateaData }) => {
               }}
             >
               <Typography variant="body2" fontWeight="bold">
-                {row+1} - {col+1}
+                {getSectorId(row, col, totalCol)}
               </Typography>
               {sector &&
                 (sector.cuerdas_pesca > 0 ||
