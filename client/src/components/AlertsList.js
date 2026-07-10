@@ -4,17 +4,7 @@ import axios from 'axios';
 import { BASE_ENDPOINT } from '../endpoint';
 import { useSession } from '../context/SessionContext';
 import { getSectorId } from '../helper/sector';
-
-const formatInterval = (vigencia) => {
-  if (!vigencia) return '';
-
-  const days = vigencia.days ?? 0;
-  const hours = String(vigencia.hours ?? 0).padStart(2, '0');
-  const minutes = String(vigencia.minutes ?? 0).padStart(2, '0');
-  const seconds = String(vigencia.seconds ?? 0).padStart(2, '0');
-
-  return `${days}d ${hours}:${minutes}:${seconds}`;
-};
+import { formatVigencia } from '../helper/vigencia';
 
 const AlertsList = () => {
   const [limit, setLimit] = useState('');
@@ -86,7 +76,7 @@ const AlertsList = () => {
                   <TableCell>{row.operacion}</TableCell>
                   <TableCell>{getSectorId(row.sector_row, row.sector_col, row.col_sector)}</TableCell>
                   <TableCell>{new Date(row.fecha).toLocaleString()}</TableCell>
-                  <TableCell>{formatInterval(row.vigencia)}</TableCell>
+                  <TableCell>{formatVigencia(row.vigencia)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
