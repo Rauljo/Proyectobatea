@@ -1,4 +1,4 @@
-import React, {useState, useEffect } from 'react';
+import React, {useState, useEffect, useCallback } from 'react';
 import { Box } from '@mui/material'; // Asegúrate de importar Box
 import axios from 'axios';
 import Grid from '@mui/material/Grid2';
@@ -20,7 +20,7 @@ import { useSession } from '../context/SessionContext';
 
 const DataInsertion = () => {
     const [selectedBatea, setSelected] = React.useState(null);
-    const [selectedCell, setSelectedCell] = React.useState(null);
+    const [selectedCells, setSelectedCells] = React.useState([]);
     const [bateaData, setBateaData] = useState(null);
     const [loading, setLoading] = useState(false);
 
@@ -51,44 +51,45 @@ const DataInsertion = () => {
 
     const handleSelectBatea = (batea) => {
         setSelected(batea);
+        setSelectedCells([]); // limpiar selección al cambiar de batea
     };
 
-    // Función para actualizar la celda seleccionada
-    const handleManualCellSelect = (cell) => {
-        setSelectedCell(cell); // Actualiza la celda seleccionada con las coordenadas x e y
+    // Añade o quita un sector de la selección múltiple
+    const handleToggleCell = (cell) => {
+        if (!cell) return;
+        const [row, col] = cell;
+        setSelectedCells((prev) => {
+            const exists = prev.some(([r, c]) => r === row && c === col);
+            return exists
+                ? prev.filter(([r, c]) => !(r === row && c === col))
+                : [...prev, [row, col]];
+        });
     };
 
-    const handleSectorUpdate = (row, col, updatedSector) => {
-        setBateaData((prev) =>
-          prev.map((s) =>
-            s.row === row && s.col === col ? { ...s, ...updatedSector } : s
-          )
-        );
-      };
-      
+    const handleClearSelection = () => setSelectedCells([]);
+
+
+    const fetchBateaData = useCallback(async () => {
+        if (!selectedBatea) return;
+        setLoading(true);
+        try {
+            const response = await axios.get(`${BASE_ENDPOINT}/sectores/${selectedBatea.id}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${session.access_token}`,
+                    }
+                }
+            );
+            setBateaData(response.data);
+        } catch (error) {
+            console.error("Error fetching batea data:", error.message);
+        }
+        setLoading(false);
+    }, [selectedBatea, session]);
 
     useEffect(() => {
-        if (!selectedBatea) return;
-
-        const fetchBateaData = async () => {
-            setLoading(true);
-            try {
-                const response = await axios.get(`${BASE_ENDPOINT}/sectores/${selectedBatea.id}`,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${session.access_token}`,
-                        }
-                    }
-                );
-                setBateaData(response.data);
-            } catch (error) {
-                console.error("Error fetching batea data:", error.message);
-            }
-            setLoading(false);
-        };
-
         fetchBateaData();
-    }, [selectedBatea, session]); // Solo se ejecuta cuando seleccionamos una batea
+    }, [fetchBateaData]); // Se ejecuta al seleccionar una batea
     
 
     if (loading) {
@@ -145,8 +146,8 @@ const DataInsertion = () => {
                         >
                             <EsquemaBatea
                             batea={selectedBatea}
-                            selectedCell={selectedCell}
-                            onCellSelect={handleManualCellSelect}
+                            selectedCells={selectedCells}
+                            onToggleCell={handleToggleCell}
                             />
                         </Box>
                         </Grid>
@@ -161,11 +162,12 @@ const DataInsertion = () => {
                         >
                             <InsertionForm
                             batea={selectedBatea}
-                            selectedCell={selectedCell}
+                            selectedCells={selectedCells}
                             sectores={bateaData}
-                            onManualCellSelect={handleManualCellSelect}
-                            onSectorUpdate={handleSectorUpdate}
-                            bateas = {bateas}
+                            onToggleCell={handleToggleCell}
+                            onClearSelection={handleClearSelection}
+                            onRefresh={fetchBateaData}
+                            bateas={bateas}
                             />
                         </Box>
                         </Grid>

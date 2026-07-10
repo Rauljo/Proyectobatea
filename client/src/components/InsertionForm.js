@@ -11,7 +11,10 @@ import {
     MenuItem,
     Select,
     FormControl,
-    InputLabel
+    InputLabel,
+    Box,
+    Chip,
+    Stack
 } from '@mui/material';
 import {
   Dialog,
@@ -27,14 +30,15 @@ import SelectorMenu from './SelectorMenu.js';
 import axios from 'axios';
 import { BASE_ENDPOINT } from '../endpoint.js';
 import { useSession } from '../context/SessionContext.js';
+import { getSectorId, getRowCol } from '../helper/sector.js';
 
 
-const InsertionForm = ({ bateas, batea, selectedCell, sectores, onManualCellSelect, onSectorUpdate }) => {
+const InsertionForm = ({ bateas, batea, selectedCells = [], onToggleCell, onClearSelection, onRefresh }) => {
     const [movementType, setMovementType] = useState('entrada');
     const [selectedCuerdaType, setSelectedCuerdaType] = useState('');
     const [cantidad, setCantidad] = useState('');
-    const [rowInput, setRowInput] = useState('');
-    const [colInput, setColInput] = useState('');
+    const [sectorNumberInput, setSectorNumberInput] = useState('');
+    const [submitting, setSubmitting] = useState(false);
 
     const [dialogOpen, setDialogOpen] = useState(false);
     const [destinoBatea, setDestinoBatea] = useState('');
@@ -42,116 +46,129 @@ const InsertionForm = ({ bateas, batea, selectedCell, sectores, onManualCellSele
     const [destinoCol, setDestinoCol] = useState('');
     const { session } = useSession();
 
+    const cols = batea.col_sector;
+    const rows = batea.row_sector;
 
-    // Sincronizar inputs con la celda seleccionada
+    // El intercambio es 1-a-1: sólo válido con exactamente un sector seleccionado.
     useEffect(() => {
-        if (selectedCell) {
-            setRowInput(selectedCell[0] + 1);
-            setColInput(selectedCell[1] + 1);
-        } else {
-            setRowInput('');
-            setColInput('');
+        if (movementType === 'intercambio' && selectedCells.length !== 1) {
+            setMovementType('entrada');
         }
-    }, [selectedCell]);
+    }, [selectedCells.length, movementType]);
 
-    const handleRowChange = (e) => {
-        setRowInput(e.target.value);
-        updateSelectedCell(e.target.value, colInput);
+    const authConfig = {
+        headers: { Authorization: `Bearer ${session.access_token}` },
     };
 
-    const handleColChange = (e) => {
-        setColInput(e.target.value);
-        updateSelectedCell(rowInput, e.target.value);
-    };
+    // Ids secuenciales de los sectores seleccionados, ordenados
+    const selectedIds = selectedCells
+        .map(([r, c]) => getSectorId(r, c, cols))
+        .sort((a, b) => a - b);
 
-    const updateSelectedCell = (row, col) => {
-        const rowNum = parseInt(row) - 1;
-        const colNum = parseInt(col) - 1;
-        if (!isNaN(rowNum) && !isNaN(colNum)) {
-            onManualCellSelect([rowNum, colNum]);
+    const handleAddByNumber = () => {
+        const n = parseInt(sectorNumberInput);
+        if (isNaN(n) || n < 1 || n > rows * cols) {
+            alert(`Introduce un número de sector entre 1 y ${rows * cols}`);
+            return;
         }
+        const [row, col] = getRowCol(n, cols);
+        const already = selectedCells.some(([r, c]) => r === row && c === col);
+        if (!already) onToggleCell?.([row, col]);
+        setSectorNumberInput('');
     };
 
-    const enviarMovimiento = async (destino = null) => {
-        const [row, col] = selectedCell;
-        const bateaId = batea.id;
+    const resetAfterSubmit = async () => {
+        setCantidad('');
+        setSelectedCuerdaType('');
+        setDestinoBatea('');
+        setDestinoRow('');
+        setDestinoCol('');
+        setDialogOpen(false);
+        if (onRefresh) await onRefresh();
+        if (onClearSelection) onClearSelection();
+    };
+
+    // Entrada / salida aplicada a todos los sectores seleccionados
+    const enviarMultiple = async () => {
         const cantidadParsed = parseInt(cantidad);
-        const bateaName = batea.name;
+        setSubmitting(true);
+
+        const results = await Promise.all(
+            selectedCells.map(([row, col]) =>
+                axios
+                    .post(`${BASE_ENDPOINT}/movimientos`, {
+                        row,
+                        col,
+                        batea: batea.id,
+                        tipo_cuerda: selectedCuerdaType,
+                        cantidad: cantidadParsed,
+                        tipo_operacion: movementType,
+                    }, authConfig)
+                    .then(() => ({ ok: true, row, col }))
+                    .catch((error) => ({
+                        ok: false,
+                        row,
+                        col,
+                        message: error.response?.data?.error || 'Error al enviar movimiento',
+                    }))
+            )
+        );
+
+        setSubmitting(false);
+
+        const failed = results.filter((r) => !r.ok);
+        const okCount = results.length - failed.length;
+
+        if (failed.length > 0) {
+            const detail = failed
+                .map((f) => `• Sector ${getSectorId(f.row, f.col, cols)}: ${f.message}`)
+                .join('\n');
+            alert(`${okCount}/${results.length} movimientos aplicados.\n\nErrores:\n${detail}`);
+        }
+
+        await resetAfterSubmit();
+    };
+
+    // Intercambio: salida en el sector de origen + entrada en el sector destino
+    const enviarIntercambio = async (destino) => {
+        const [row, col] = selectedCells[0];
+        const cantidadParsed = parseInt(cantidad);
 
         try {
-
-
-            const payload = {
+            await axios.post(`${BASE_ENDPOINT}/movimientos`, {
                 row,
                 col,
-                batea: bateaId,
+                batea: batea.id,
                 tipo_cuerda: selectedCuerdaType,
                 cantidad: cantidadParsed,
-                tipo_operacion: movementType,
-            };
+                tipo_operacion: 'salida',
+                nota: `Intercambio con Batea ${destino.bateaName} (${destino.bateaId}) en (${destino.row + 1}, ${destino.col + 1})`,
+            }, authConfig);
 
-            if (movementType === 'intercambio' && destino) {
-                payload.tipo_operacion = 'salida';
-                payload.nota = `Intercambio con Batea ${destino.bateaName} (${destino.bateaId}) en (${destino.row + 1}, ${destino.col + 1})`;
-            };
+            await axios.post(`${BASE_ENDPOINT}/movimientos`, {
+                row: destino.row,
+                col: destino.col,
+                batea: destino.bateaId,
+                tipo_cuerda: selectedCuerdaType,
+                cantidad: cantidadParsed,
+                tipo_operacion: 'entrada',
+                nota: `Intercambio con Batea ${batea.name} (${batea.id}) en (${row + 1}, ${col + 1})`,
+            }, authConfig);
 
-            // Enviar movimiento base
-            try {
-                await axios.post(`${BASE_ENDPOINT}/movimientos`, payload,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${session.access_token}`,
-                        },
-                    }
-                );
-
-                //Ahora, si hay un intercambio, enviamos el movimiento de entrada
-            if (movementType === 'intercambio' && destino) {
-                payload.row = destino.row;
-                payload.col = destino.col;
-                payload.batea = destino.bateaId;
-                payload.tipo_operacion = 'entrada';
-                payload.nota = `Intercambio con Batea ${bateaName} (${bateaId}) en (${row + 1}, ${col + 1})`;
-
-                await axios.post(`${BASE_ENDPOINT}/movimientos`, payload,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${session.access_token}`,
-                        },
-                    }
-                );
-
-            };
-
-            } catch (error) {
-                const message = error.response?.data?.error || "Error al enviar movimiento";
-                alert(`Error: ${message}`);
-            }
-            
-
-            
-            if (onSectorUpdate) onSectorUpdate(row, col);
-
-            // Limpiar estados
-            setCantidad('');
-            setSelectedCuerdaType('');
-            setDestinoBatea('');
-            setDestinoRow('');
-            setDestinoCol('');
-            setDialogOpen(false);
-
+            await resetAfterSubmit();
         } catch (error) {
-            console.error('Error al enviar el movimiento:', error);
+            const message = error.response?.data?.error || 'Error al enviar el intercambio';
+            alert(`Error: ${message}`);
         }
     };
 
-    const handleSubmit = async () => {
-        if (!selectedCell || !selectedCuerdaType || !cantidad) return;
+    const handleSubmit = () => {
+        if (selectedCells.length === 0 || !selectedCuerdaType || !cantidad) return;
 
         if (movementType === 'intercambio') {
-            setDialogOpen(true);  // abrir diálogo
+            setDialogOpen(true);
         } else {
-            enviarMovimiento();  // entrada o salida normales
+            enviarMultiple();
         }
     };
 
@@ -166,26 +183,43 @@ const InsertionForm = ({ bateas, batea, selectedCell, sectores, onManualCellSele
                     Batea: {batea.name}
                 </Typography>
 
-                <Grid container spacing={2}>
-                    <Grid item xs={6}>
-                        <TextField
-                            label="Fila"
-                            fullWidth
-                            value={rowInput}
-                            onChange={handleRowChange}
-                            type="number"
-                        />
-                    </Grid>
-                    <Grid item xs={6}>
-                        <TextField
-                            label="Columna"
-                            fullWidth
-                            value={colInput}
-                            onChange={handleColChange}
-                            type="number"
-                        />
-                    </Grid>
-                </Grid>
+                {/* Añadir sector por número */}
+                <Box sx={{ display: 'flex', gap: 1, mt: 2, alignItems: 'center' }}>
+                    <TextField
+                        label="Añadir sector nº"
+                        type="number"
+                        size="small"
+                        value={sectorNumberInput}
+                        onChange={(e) => setSectorNumberInput(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === 'Enter') handleAddByNumber(); }}
+                        inputProps={{ min: 1, max: rows * cols }}
+                        sx={{ flex: 1 }}
+                    />
+                    <Button variant="outlined" onClick={handleAddByNumber}>Añadir</Button>
+                </Box>
+
+                {/* Resumen de sectores seleccionados */}
+                <Box sx={{ mt: 2 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography variant="subtitle2">
+                            Sectores seleccionados ({selectedIds.length})
+                        </Typography>
+                        {selectedIds.length > 0 && (
+                            <Button size="small" color="secondary" onClick={onClearSelection}>
+                                Limpiar
+                            </Button>
+                        )}
+                    </Box>
+                    <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1, mt: 1 }}>
+                        {selectedIds.length === 0 ? (
+                            <Typography variant="caption" color="text.secondary">
+                                Haz clic en el esquema o añade un sector por número.
+                            </Typography>
+                        ) : (
+                            selectedIds.map((id) => <Chip key={id} label={id} size="small" />)
+                        )}
+                    </Stack>
+                </Box>
 
                 <Typography variant="subtitle2" sx={{ mt: 2 }}>
                     Tipo de Movimiento
@@ -201,8 +235,15 @@ const InsertionForm = ({ bateas, batea, selectedCell, sectores, onManualCellSele
                 >
                     <ToggleButton value="entrada">Entrada</ToggleButton>
                     <ToggleButton value="salida">Salida</ToggleButton>
-                    <ToggleButton value="intercambio">Intercambio</ToggleButton>
+                    <ToggleButton value="intercambio" disabled={selectedCells.length !== 1}>
+                        Intercambio
+                    </ToggleButton>
                 </ToggleButtonGroup>
+                {selectedCells.length !== 1 && (
+                    <Typography variant="caption" color="text.secondary" display="block">
+                        El intercambio requiere exactamente un sector seleccionado.
+                    </Typography>
+                )}
 
                 <FormControl fullWidth sx={{ mt: 2 }}>
                     <InputLabel>Tipo de Cuerda</InputLabel>
@@ -234,9 +275,11 @@ const InsertionForm = ({ bateas, batea, selectedCell, sectores, onManualCellSele
                     fullWidth
                     sx={{ mt: 3 }}
                     onClick={handleSubmit}
-                    disabled={!selectedCell || !selectedCuerdaType || !cantidad}
+                    disabled={selectedCells.length === 0 || !selectedCuerdaType || !cantidad || submitting}
                 >
-                    Enviar Movimiento
+                    {movementType === 'intercambio'
+                        ? 'Enviar Intercambio'
+                        : `Enviar a ${selectedCells.length} sector${selectedCells.length === 1 ? '' : 'es'}`}
                 </Button>
             </CardContent>
             <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} fullWidth>
@@ -281,7 +324,7 @@ const InsertionForm = ({ bateas, batea, selectedCell, sectores, onManualCellSele
                     </Button>
                     <Button
                         onClick={() =>
-                            enviarMovimiento({
+                            enviarIntercambio({
                                 bateaId: destinoBatea.id,
                                 bateaName: destinoBatea.name,
                                 row: parseInt(destinoRow) - 1,

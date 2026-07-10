@@ -1,24 +1,15 @@
-import { useState, useEffect } from 'react';
 import { getSectorId } from '../helper/sector';
 
 
-const EsquemaBatea = ({ batea, selectedCell, onCellSelect }) => {
+const EsquemaBatea = ({ batea, selectedCells = [], onToggleCell }) => {
     const rows = batea.row_sector;
     const cols = batea.col_sector;
 
-    // Guardamos solo la celda seleccionada como [fila, columna]
-    const [currentSelectedCell, setCurrentSelectedCell] = useState(selectedCell);
-
-    // Si el selectedCell cambia, actualizamos el estado de la celda seleccionada
-    useEffect(() => {
-        setCurrentSelectedCell(selectedCell);
-    }, [selectedCell]);
+    const isSelected = (rowIdx, colIdx) =>
+        selectedCells.some(([r, c]) => r === rowIdx && c === colIdx);
 
     const handleCellClick = (rowIdx, colIdx) => {
-        const isAlreadySelected = currentSelectedCell?.[0] === rowIdx && currentSelectedCell?.[1] === colIdx;
-        const newSelection = isAlreadySelected ? null : [rowIdx, colIdx];
-        setCurrentSelectedCell(newSelection);
-        onCellSelect?.(newSelection); // notificamos al componente padre
+        onToggleCell?.([rowIdx, colIdx]); // el padre gestiona añadir/quitar
     };
 
     return (
@@ -33,9 +24,7 @@ const EsquemaBatea = ({ batea, selectedCell, onCellSelect }) => {
             >
                 {Array.from({ length: rows }).map((_, rowIdx) =>
                     Array.from({ length: cols }).map((_, colIdx) => {
-                        const isSelected =
-                            currentSelectedCell?.[0] === rowIdx &&
-                            currentSelectedCell?.[1] === colIdx;
+                        const selected = isSelected(rowIdx, colIdx);
 
                         return (
                             <div
@@ -45,8 +34,8 @@ const EsquemaBatea = ({ batea, selectedCell, onCellSelect }) => {
                                     padding: '10px',
                                     textAlign: 'center',
                                     cursor: 'pointer',
-                                    backgroundColor: isSelected ? '#4caf50' : '#e0e0e0',
-                                    color: isSelected ? 'white' : 'black',
+                                    backgroundColor: selected ? '#4caf50' : '#e0e0e0',
+                                    color: selected ? 'white' : 'black',
                                     borderRadius: '8px',
                                     userSelect: 'none',
                                     fontWeight: 'bold',
