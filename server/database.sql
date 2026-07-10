@@ -17,16 +17,16 @@ CREATE TABLE sectores(
 	col int,
 	batea int,
 	cuerdas_pesca int default 0,
-	cuerdas_piedra int default 0,
+	cuerdas_cria int default 0,
 	cuerdas_desdoble int default 0,
-	cuerdas_comercial int default 0,
+	cuerdas_reparque int default 0,
 	primary key (row,col,batea),
 	foreign key(batea) references bateas(id)
 );
 
 create table movimientos (
 	id serial primary key,
-	tipo_cuerda varchar(10) check (tipo_cuerda in ('pesca', 'piedra', 'desdoble', 'comercial')),
+	tipo_cuerda varchar(10) check (tipo_cuerda in ('pesca', 'cria', 'desdoble', 'reparque')),
 	cantidad int,
 	operacion varchar(10) check (operacion in ('entrada', 'salida')),
 	sector_row int,
@@ -62,17 +62,17 @@ begin
             if (new.cantidad > (select cuerdas_pesca from sectores where row = new.sector_row and col = new.sector_col and batea = new.sector_batea)) then
                 raise exception 'No hay suficientes cuerdas de pesca en el sector (%,%) de batea %', new.sector_row+1, new.sector_col+1, new.sector_batea;
             end if;
-        elsif (new.tipo_cuerda = 'piedra') then
-            if (new.cantidad > (select cuerdas_piedra from sectores where row = new.sector_row and col = new.sector_col and batea = new.sector_batea)) then
-                raise exception 'No hay suficientes cuerdas de piedra en el sector (%,%) de batea %', new.sector_row+1, new.sector_col+1, new.sector_batea;
+        elsif (new.tipo_cuerda = 'cria') then
+            if (new.cantidad > (select cuerdas_cria from sectores where row = new.sector_row and col = new.sector_col and batea = new.sector_batea)) then
+                raise exception 'No hay suficientes cuerdas de cria en el sector (%,%) de batea %', new.sector_row+1, new.sector_col+1, new.sector_batea;
             end if;
         elsif (new.tipo_cuerda = 'desdoble') then
             if (new.cantidad > (select cuerdas_desdoble from sectores where row = new.sector_row and col = new.sector_col and batea = new.sector_batea)) then
                 raise exception 'No hay suficientes cuerdas de desdoble en el sector (%,%) de batea %', new.sector_row+1, new.sector_col+1, new.sector_batea;
             end if;
-        elsif (new.tipo_cuerda = 'comercial') then
-            if (new.cantidad > (select cuerdas_comercial from sectores where row = new.sector_row and col = new.sector_col and batea = new.sector_batea)) then
-                raise exception 'No hay suficientes cuerdas comerciales en el sector (%,%) de batea %', new.sector_row+1, new.sector_col+1, new.sector_batea;
+        elsif (new.tipo_cuerda = 'reparque') then
+            if (new.cantidad > (select cuerdas_reparque from sectores where row = new.sector_row and col = new.sector_col and batea = new.sector_batea)) then
+                raise exception 'No hay suficientes cuerdas de reparque en el sector (%,%) de batea %', new.sector_row+1, new.sector_col+1, new.sector_batea;
             end if;
         end if;
     end if;
@@ -94,18 +94,18 @@ begin
             update sectores set cuerdas_pesca = cuerdas_pesca + new_mov.cantidad
             where row = new_mov.sector_row and col = new_mov.sector_col and batea = new_mov.sector_batea
             returning cuerdas_pesca into nuevo_valor;
-        elsif new_mov.tipo_cuerda = 'piedra' then
-            update sectores set cuerdas_piedra = cuerdas_piedra + new_mov.cantidad
+        elsif new_mov.tipo_cuerda = 'cria' then
+            update sectores set cuerdas_cria = cuerdas_cria + new_mov.cantidad
             where row = new_mov.sector_row and col = new_mov.sector_col and batea = new_mov.sector_batea
-            returning cuerdas_piedra into nuevo_valor;
+            returning cuerdas_cria into nuevo_valor;
         elsif new_mov.tipo_cuerda = 'desdoble' then
             update sectores set cuerdas_desdoble = cuerdas_desdoble + new_mov.cantidad
             where row = new_mov.sector_row and col = new_mov.sector_col and batea = new_mov.sector_batea
             returning cuerdas_desdoble into nuevo_valor;
-        elsif new_mov.tipo_cuerda = 'comercial' then
-            update sectores set cuerdas_comercial = cuerdas_comercial + new_mov.cantidad
+        elsif new_mov.tipo_cuerda = 'reparque' then
+            update sectores set cuerdas_reparque = cuerdas_reparque + new_mov.cantidad
             where row = new_mov.sector_row and col = new_mov.sector_col and batea = new_mov.sector_batea
-            returning cuerdas_comercial into nuevo_valor;
+            returning cuerdas_reparque into nuevo_valor;
         end if;
 
     elsif new_mov.operacion = 'salida' then
@@ -113,18 +113,18 @@ begin
             update sectores set cuerdas_pesca = cuerdas_pesca - new_mov.cantidad
             where row = new_mov.sector_row and col = new_mov.sector_col and batea = new_mov.sector_batea
             returning cuerdas_pesca into nuevo_valor;
-        elsif new_mov.tipo_cuerda = 'piedra' then
-            update sectores set cuerdas_piedra = cuerdas_piedra - new_mov.cantidad
+        elsif new_mov.tipo_cuerda = 'cria' then
+            update sectores set cuerdas_cria = cuerdas_cria - new_mov.cantidad
             where row = new_mov.sector_row and col = new_mov.sector_col and batea = new_mov.sector_batea
-            returning cuerdas_piedra into nuevo_valor;
+            returning cuerdas_cria into nuevo_valor;
         elsif new_mov.tipo_cuerda = 'desdoble' then
             update sectores set cuerdas_desdoble = cuerdas_desdoble - new_mov.cantidad
             where row = new_mov.sector_row and col = new_mov.sector_col and batea = new_mov.sector_batea
             returning cuerdas_desdoble into nuevo_valor;
-        elsif new_mov.tipo_cuerda = 'comercial' then
-            update sectores set cuerdas_comercial = cuerdas_comercial - new_mov.cantidad
+        elsif new_mov.tipo_cuerda = 'reparque' then
+            update sectores set cuerdas_reparque = cuerdas_reparque - new_mov.cantidad
             where row = new_mov.sector_row and col = new_mov.sector_col and batea = new_mov.sector_batea
-            returning cuerdas_comercial into nuevo_valor;
+            returning cuerdas_reparque into nuevo_valor;
         end if;
     end if;
         

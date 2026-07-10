@@ -53,7 +53,7 @@ app.post("/bateas", async (req, res) => {
         //We also add as many sectors as the user wants
         for (let i = 0; i < row; i++) {
             for (let j = 0; j < col; j++) {
-                const newSector = await pool.query("INSERT INTO sectores (row, col, batea, cuerdas_pesca, cuerdas_piedra, cuerdas_desdoble, cuerdas_comercial) VALUES($1, $2, $3, 0, 0, 0, 0) RETURNING *", [i, j, newBatea.rows[0].id]);
+                const newSector = await pool.query("INSERT INTO sectores (row, col, batea, cuerdas_pesca, cuerdas_cria, cuerdas_desdoble, cuerdas_reparque) VALUES($1, $2, $3, 0, 0, 0, 0) RETURNING *", [i, j, newBatea.rows[0].id]);
             }
         }
     } catch (err) {

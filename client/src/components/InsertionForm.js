@@ -253,9 +253,9 @@ const InsertionForm = ({ bateas, batea, selectedCells = [], onToggleCell, onClea
                         onChange={(e) => setSelectedCuerdaType(e.target.value)}
                     >
                         <MenuItem value="pesca">Pesca</MenuItem>
-                        <MenuItem value="piedra">Piedra</MenuItem>
+                        <MenuItem value="cria">Cría</MenuItem>
                         <MenuItem value="desdoble">Desdoble</MenuItem>
-                        <MenuItem value="comercial">Comercial</MenuItem>
+                        <MenuItem value="reparque">Reparque</MenuItem>
                     </Select>
                 </FormControl>
 

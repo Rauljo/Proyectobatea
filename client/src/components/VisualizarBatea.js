@@ -47,21 +47,21 @@ const MatrizSectores = ({ batea, bateaData }) => {
               </Typography>
               {sector &&
                 (sector.cuerdas_pesca > 0 ||
-                sector.cuerdas_piedra > 0 ||
+                sector.cuerdas_cria > 0 ||
                 sector.cuerdas_desdoble > 0 ||
-                sector.cuerdas_comercial > 0) ? (
+                sector.cuerdas_reparque > 0) ? (
                 <>
                     {sector.cuerdas_pesca > 0 && (
                     <Typography variant="caption">Pesca: {sector.cuerdas_pesca}</Typography>
                     )}
-                    {sector.cuerdas_piedra > 0 && (
-                    <Typography variant="caption">Piedra: {sector.cuerdas_piedra}</Typography>
+                    {sector.cuerdas_cria > 0 && (
+                    <Typography variant="caption">Cría: {sector.cuerdas_cria}</Typography>
                     )}
                     {sector.cuerdas_desdoble > 0 && (
                     <Typography variant="caption">Desd.: {sector.cuerdas_desdoble}</Typography>
                     )}
-                    {sector.cuerdas_comercial > 0 && (
-                    <Typography variant="caption">Com.: {sector.cuerdas_comercial}</Typography>
+                    {sector.cuerdas_reparque > 0 && (
+                    <Typography variant="caption">Reparque: {sector.cuerdas_reparque}</Typography>
                     )}
                 </>
                 ) : (
@@ -83,11 +83,11 @@ const InfoBateas = ({ batea, sectores }) => {
     ? sectores.reduce(
         (acc, sector) => ({
           cuerdas_pesca: acc.cuerdas_pesca + (sector.cuerdas_pesca || 0),
-          cuerdas_piedra: acc.cuerdas_piedra + (sector.cuerdas_piedra || 0),
+          cuerdas_cria: acc.cuerdas_cria + (sector.cuerdas_cria || 0),
           cuerdas_desdoble: acc.cuerdas_desdoble + (sector.cuerdas_desdoble || 0),
-          cuerdas_comercial: acc.cuerdas_comercial + (sector.cuerdas_comercial || 0),
+          cuerdas_reparque: acc.cuerdas_reparque + (sector.cuerdas_reparque || 0),
         }),
-        { cuerdas_pesca: 0, cuerdas_piedra: 0, cuerdas_desdoble: 0, cuerdas_comercial: 0 }
+        { cuerdas_pesca: 0, cuerdas_cria: 0, cuerdas_desdoble: 0, cuerdas_reparque: 0 }
       )
     : null;
 
@@ -143,9 +143,9 @@ const InfoBateas = ({ batea, sectores }) => {
           {totals && (
             <>
               {renderInfoBox('C. Pesca', totals.cuerdas_pesca)}
-              {renderInfoBox('C. Piedra', totals.cuerdas_piedra)}
+              {renderInfoBox('C. Cría', totals.cuerdas_cria)}
               {renderInfoBox('C. Desdoble', totals.cuerdas_desdoble)}
-              {renderInfoBox('C. Comercial', totals.cuerdas_comercial)}
+              {renderInfoBox('C. Reparque', totals.cuerdas_reparque)}
             </>
           )}
         </Grid>
