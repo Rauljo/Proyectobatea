@@ -69,9 +69,11 @@ const DataInsertion = () => {
     const handleClearSelection = () => setSelectedCells([]);
 
 
+    // No cambia `loading`: se usa también para refrescar en segundo plano tras
+    // enviar un movimiento, y no queremos desmontar EsquemaBatea/InsertionForm
+    // (eso reiniciaría el estado del formulario, ej. tipo de cuerda y fecha).
     const fetchBateaData = useCallback(async () => {
         if (!selectedBatea) return;
-        setLoading(true);
         try {
             const response = await axios.get(`${BASE_ENDPOINT}/sectores/${selectedBatea.id}`,
                 {
@@ -84,12 +86,13 @@ const DataInsertion = () => {
         } catch (error) {
             console.error("Error fetching batea data:", error.message);
         }
-        setLoading(false);
     }, [selectedBatea, session]);
 
     useEffect(() => {
-        fetchBateaData();
-    }, [fetchBateaData]); // Se ejecuta al seleccionar una batea
+        if (!selectedBatea) return;
+        setLoading(true);
+        fetchBateaData().finally(() => setLoading(false));
+    }, [selectedBatea]); // eslint-disable-line react-hooks/exhaustive-deps
     
 
     if (loading) {
