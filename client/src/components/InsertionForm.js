@@ -37,6 +37,7 @@ const InsertionForm = ({ bateas, batea, selectedCells = [], onToggleCell, onClea
     const [movementType, setMovementType] = useState('entrada');
     const [selectedCuerdaType, setSelectedCuerdaType] = useState('');
     const [cantidad, setCantidad] = useState('');
+    const [fecha, setFecha] = useState(() => new Date().toISOString().split('T')[0]);
     const [sectorNumberInput, setSectorNumberInput] = useState('');
     const [submitting, setSubmitting] = useState(false);
 
@@ -78,8 +79,9 @@ const InsertionForm = ({ bateas, batea, selectedCells = [], onToggleCell, onClea
     };
 
     const resetAfterSubmit = async () => {
+        // Tipo de cuerda, tipo de movimiento y fecha se mantienen: al insertar
+        // varias cuerdas nuevas seguidas, normalmente son del mismo tipo y día.
         setCantidad('');
-        setSelectedCuerdaType('');
         setDestinoBatea('');
         setDestinoRow('');
         setDestinoCol('');
@@ -103,6 +105,7 @@ const InsertionForm = ({ bateas, batea, selectedCells = [], onToggleCell, onClea
                         tipo_cuerda: selectedCuerdaType,
                         cantidad: cantidadParsed,
                         tipo_operacion: movementType,
+                        fecha,
                     }, authConfig)
                     .then(() => ({ ok: true, row, col }))
                     .catch((error) => ({
@@ -143,6 +146,7 @@ const InsertionForm = ({ bateas, batea, selectedCells = [], onToggleCell, onClea
                 cantidad: cantidadParsed,
                 tipo_operacion: 'salida',
                 nota: `Intercambio con Batea ${destino.bateaName} (${destino.bateaId}) en (${destino.row + 1}, ${destino.col + 1})`,
+                fecha,
             }, authConfig);
 
             await axios.post(`${BASE_ENDPOINT}/movimientos`, {
@@ -153,6 +157,7 @@ const InsertionForm = ({ bateas, batea, selectedCells = [], onToggleCell, onClea
                 cantidad: cantidadParsed,
                 tipo_operacion: 'entrada',
                 nota: `Intercambio con Batea ${batea.name} (${batea.id}) en (${row + 1}, ${col + 1})`,
+                fecha,
             }, authConfig);
 
             await resetAfterSubmit();
@@ -267,6 +272,16 @@ const InsertionForm = ({ bateas, batea, selectedCells = [], onToggleCell, onClea
                     value={cantidad}
                     onChange={(e) => setCantidad(e.target.value)}
                     inputProps={{ min: 0 }}
+                />
+
+                <TextField
+                    label="Fecha del movimiento"
+                    type="date"
+                    fullWidth
+                    sx={{ mt: 2 }}
+                    value={fecha}
+                    onChange={(e) => setFecha(e.target.value)}
+                    slotProps={{ inputLabel: { shrink: true } }}
                 />
 
                 <Button

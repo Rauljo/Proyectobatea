@@ -76,7 +76,7 @@ app.get("/sectores/:id", async (req, res) => {
 //Insert movement based on row, col and batea
 app.post("/movimientos", async (req, res) => {
     try {
-        const { row, col, batea, tipo_cuerda, cantidad, tipo_operacion, nota } = req.body;
+        const { row, col, batea, tipo_cuerda, cantidad, tipo_operacion, nota, fecha } = req.body;
 
 
         let newMovimiento;
@@ -109,20 +109,20 @@ app.post("/movimientos", async (req, res) => {
                 //fecha_previa of this movement will be the date of the last movement of the same tipo_cuerda and tipo_operacion = 'entrada' in the other batea
                 newMovimiento = await pool.query(`
                     INSERT INTO movimientos (
-                        tipo_cuerda, cantidad, operacion, sector_row, sector_col, sector_batea, fecha_previa, nota
+                        tipo_cuerda, cantidad, operacion, sector_row, sector_col, sector_batea, fecha_previa, nota, fecha
                     )
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, COALESCE($9, now()))
                     RETURNING *`,
-                    [tipo_cuerda, cantidad, tipo_operacion, row, col, batea, fecha_previa, nota || '']
+                    [tipo_cuerda, cantidad, tipo_operacion, row, col, batea, fecha_previa, nota || '', fecha || null]
                 );
             }
         }
         else{
             newMovimiento = await pool.query(`
-                INSERT INTO movimientos (tipo_cuerda, cantidad, operacion, sector_row, sector_col, sector_batea, nota)
-                VALUES($1, $2, $3, $4, $5, $6, $7)
+                INSERT INTO movimientos (tipo_cuerda, cantidad, operacion, sector_row, sector_col, sector_batea, nota, fecha)
+                VALUES($1, $2, $3, $4, $5, $6, $7, COALESCE($8, now()))
                 RETURNING *`,
-                [tipo_cuerda, cantidad, tipo_operacion, row, col, batea, nota || '']
+                [tipo_cuerda, cantidad, tipo_operacion, row, col, batea, nota || '', fecha || null]
             );
         }     
 
