@@ -7,7 +7,10 @@ drop table bateas;
 CREATE TABLE bateas(
 	id SERIAL primary key,
 	name varchar(25),
+	zona varchar(25),
 	polygon varchar(25),
+	cuadrante varchar(25),
+	distrito varchar(25),
 	row_sector int,
 	col_sector int
 );

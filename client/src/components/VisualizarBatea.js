@@ -150,7 +150,10 @@ const InfoBateas = ({ batea, sectores }) => {
 
         <Grid container spacing={{ xs: 2, md: 4 }} justifyContent="center">
           {renderInfoBox('Nombre', batea.name)}
+          {renderInfoBox('Zona', batea.zona)}
           {renderInfoBox('Polígono', batea.polygon)}
+          {renderInfoBox('Cuadrante', batea.cuadrante)}
+          {renderInfoBox('Distrito', batea.distrito)}
           {renderInfoBox('Filas', batea.row_sector)}
           {renderInfoBox('Columnas', batea.col_sector)}
 
