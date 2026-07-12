@@ -14,9 +14,8 @@ import {
     Box
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import supabase from '../helper/supabase';
-import { useNavigate } from 'react-router-dom';
 
 const navItems = [
     { label: 'Inserción', to: '/insercion' },
@@ -25,13 +24,14 @@ const navItems = [
 ];
 
 const Navigation = () => {
-    const [value, setValue] = useState(0);
     const [drawerOpen, setDrawerOpen] = useState(false);
     const navigate = useNavigate();
+    const location = useLocation();
 
-    const handleChange = (event, newValue) => {
-        setValue(newValue);
-    };
+    // "/" muestra el mismo contenido que "/insercion", así que se trata igual
+    // a la hora de marcar la sección activa.
+    const currentPath = location.pathname === '/' ? '/insercion' : location.pathname;
+    const activeTab = navItems.some((item) => item.to === currentPath) ? currentPath : false;
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
@@ -50,11 +50,11 @@ const Navigation = () => {
 
                 {/* Menú de escritorio: visible a partir de md */}
                 <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
-                    <Tabs value={value} onChange={handleChange} textColor="inherit">
+                    <Tabs value={activeTab} textColor="inherit">
                         {navItems.map((item) => (
-                            <Tab key={item.to} label={item.label} sx={{ fontWeight: 'bold' }} component={Link} to={item.to} />
+                            <Tab key={item.to} value={item.to} label={item.label} sx={{ fontWeight: 'bold' }} component={Link} to={item.to} />
                         ))}
-                        <Tab label="Cerrar Sesión" sx={{ fontWeight: 'bold' }} onClick={handleLogout} />
+                        <Tab value={false} label="Cerrar Sesión" sx={{ fontWeight: 'bold' }} onClick={handleLogout} />
                     </Tabs>
                 </Box>
 
@@ -74,7 +74,12 @@ const Navigation = () => {
                     <List>
                         {navItems.map((item) => (
                             <ListItem key={item.to} disablePadding>
-                                <ListItemButton component={Link} to={item.to} onClick={() => setDrawerOpen(false)}>
+                                <ListItemButton
+                                    selected={item.to === currentPath}
+                                    component={Link}
+                                    to={item.to}
+                                    onClick={() => setDrawerOpen(false)}
+                                >
                                     <ListItemText primary={item.label} />
                                 </ListItemButton>
                             </ListItem>

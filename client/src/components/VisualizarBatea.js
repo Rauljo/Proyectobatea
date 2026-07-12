@@ -1,18 +1,49 @@
+import { useState } from 'react';
 import Grid from '@mui/material/Grid2';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, Switch, FormControlLabel } from '@mui/material';
 import { getSectorId } from '../helper/sector';
 import { useResponsiveCellSize } from '../helper/useResponsiveCellSize';
+import { getSeveridad } from '../helper/vigencia';
 
 // Un glifo corto por tipo de cuerda: evita que las etiquetas ("Reparque: 12")
 // se partan en dos líneas dentro de una celda pequeña.
-const CUERDA_EMOJI = {
+export const CUERDA_EMOJI = {
   pesca: '🎣',
   cria: '🐚',
   desdoble: '✂️',
   reparque: '📦',
 };
 
-const MatrizSectores = ({ batea, bateaData }) => {
+// Colores de fondo de celda según el estado de la peor cuerda del sector
+const ESTADO_COLOR = {
+  ok: '#c8e6c9',       // al día
+  atencion: '#ffe0b2', // pasada de plazo
+  urgente: '#ffcdd2',  // más de un mes pasada de plazo
+};
+const ESTADO_RANK = { ok: 1, atencion: 2, urgente: 3 };
+
+// Peor severidad por sector ("row-col" -> 'ok' | 'atencion' | 'urgente')
+// entre las cuerdas vigentes, comparando cada una con el umbral de su tipo.
+const calcularEstados = (movimientos, umbrales) => {
+  const umbralMap = Object.fromEntries(umbrales.map((u) => [u.tipo_cuerda, u.meses]));
+  const estados = new Map();
+
+  for (const m of movimientos) {
+    if (!m.vigente) continue;
+    const umbral = umbralMap[m.tipo_cuerda];
+    if (!umbral) continue;
+
+    const sev = getSeveridad(m.vigencia, umbral);
+    const key = `${m.sector_row}-${m.sector_col}`;
+    if (!estados.has(key) || ESTADO_RANK[sev] > ESTADO_RANK[estados.get(key)]) {
+      estados.set(key, sev);
+    }
+  }
+
+  return estados;
+};
+
+const MatrizSectores = ({ batea, bateaData, estados }) => {
   const totalRow = batea.row_sector;
   const totalCol = batea.col_sector;
 
@@ -34,6 +65,12 @@ const MatrizSectores = ({ batea, bateaData }) => {
       {Array.from({ length: totalRow }).flatMap((_, row) =>
         Array.from({ length: totalCol }).map((_, col) => {
           const sector = bateaData.find((s) => s.col === col && s.row === row);
+          // Con el coloreado activo, celda según la peor cuerda del sector;
+          // sin cuerdas vigentes queda en un gris más claro que el normal.
+          const estado = estados ? estados.get(`${row}-${col}`) : null;
+          const backgroundColor = estados
+            ? (ESTADO_COLOR[estado] ?? '#f0f0f0')
+            : '#e0e0e0';
 
           return (
             <Box
@@ -41,7 +78,7 @@ const MatrizSectores = ({ batea, bateaData }) => {
               sx={{
                 //width: `${cellSize}px`,
                 //height: `${cellSize}px`,
-                backgroundColor: '#e0e0e0',
+                backgroundColor,
                 borderRadius: '8px',
                 textAlign: 'center',
                 padding: '8px',
@@ -172,14 +209,38 @@ const InfoBateas = ({ batea, sectores }) => {
 };
 
 
-const VisualizarBatea = ({ batea, bateaData }) => {
-    //const [bateaData, setBateaData] = useState([]);
-    //const [loading, setLoading] = useState(false);
+const LeyendaVigencia = () => (
+  <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', marginTop: 1 }}>
+    {[
+      ['ok', 'Al día'],
+      ['atencion', 'Pasada de plazo'],
+      ['urgente', 'Urgente (+1 mes)'],
+    ].map(([estado, label]) => (
+      <Box key={estado} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+        <Box sx={{ width: 12, height: 12, borderRadius: '3px', backgroundColor: ESTADO_COLOR[estado] }} />
+        <Typography variant="caption" color="text.secondary">{label}</Typography>
+      </Box>
+    ))}
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+      <Box sx={{ width: 12, height: 12, borderRadius: '3px', backgroundColor: '#f0f0f0', border: '1px solid #ddd' }} />
+      <Typography variant="caption" color="text.secondary">Sin cuerdas</Typography>
+    </Box>
+  </Box>
+);
 
-    
+const VisualizarBatea = ({ batea, bateaData, movimientos = [], umbrales = [] }) => {
+    const [colorear, setColorear] = useState(true);
+
+    const estados = colorear ? calcularEstados(movimientos, umbrales) : null;
+
     return (
         <>
-            <MatrizSectores batea={batea} bateaData={bateaData} />
+            <FormControlLabel
+                control={<Switch checked={colorear} onChange={(e) => setColorear(e.target.checked)} />}
+                label="Colorear por vigencia"
+            />
+            {colorear && <LeyendaVigencia />}
+            <MatrizSectores batea={batea} bateaData={bateaData} estados={estados} />
         </>
     );
 };

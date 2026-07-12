@@ -1,13 +1,10 @@
-import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { useState } from 'react';
 import Box from '@mui/material/Box';
 import Collapse from '@mui/material/Collapse';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import { BASE_ENDPOINT } from '../endpoint';
-import { useSession } from '../context/SessionContext';
 import { getSectorId } from '../helper/sector';
 import { formatVigencia } from '../helper/vigencia';
 import { toLocalDateString } from '../helper/date';
@@ -169,41 +166,14 @@ const GroupCard = ({ grupo, cols }) => {
 };
 
 
-const VisualizarMovimientos = ({batea}) => {
-
-    const [movimientos, setMovimientos] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const { session } = useSession();
-
-    useEffect(() => {
-        if (!batea) return;
-
-        const fetchMovimientos = async () => {
-            setLoading(true);
-            try {
-                const response = await axios.get(`${BASE_ENDPOINT}/movimientos/${batea.id}?vigencia=true`,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${session.access_token}`,
-                        },
-                    }
-                );
-                setMovimientos(response.data);
-            } catch (error) {
-                console.error(error.message);
-            }
-            setLoading(false);
-        }
-
-        fetchMovimientos();
-    }
-    , [batea, session]);
+// Los movimientos llegan del padre (Visualizacion), que los comparte con la
+// rejilla de sectores para poder colorearla por vigencia sin duplicar peticiones.
+const VisualizarMovimientos = ({batea, movimientos = []}) => {
 
     const grupos = agruparMovimientos(movimientos, batea.col_sector);
 
     return (
         <div>
-            {loading && <p>Cargando...</p>}
             <h2>Movimientos de la batea {batea.name}</h2>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, maxWidth: 640 }}>
                 {grupos.map((g) => (

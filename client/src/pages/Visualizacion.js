@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import Grid from '@mui/material/Grid';
 import { Box } from '@mui/material';
+import axios from 'axios';
 
 import SelectorMenu from '../components/SelectorMenu';
 import VisualizarBatea from '../components/VisualizarBatea';
@@ -18,6 +19,8 @@ const Visualizacion = () => {
     const { selectedBatea, setSelectedBatea: setSelected } = useSelectedBatea();
     const [bateas, setBateas] = useState([]);
     const [bateaData, setBateaData] = useState(null);
+    const [movimientos, setMovimientos] = useState([]);
+    const [umbrales, setUmbrales] = useState([]);
     const { session } = useSession();
 
     useEffect(() => {
@@ -40,6 +43,26 @@ const Visualizacion = () => {
         fetchBateas();
     }, [session]);
 
+    // Umbrales de vigencia, para colorear los sectores según su estado
+    useEffect(() => {
+        const fetchUmbrales = async () => {
+            try {
+                const response = await axios.get(`${BASE_ENDPOINT}/umbrales`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${session.access_token}`,
+                        },
+                    }
+                );
+                setUmbrales(response.data);
+            } catch (error) {
+                console.error("Error fetching umbrales:", error.message);
+            }
+        };
+
+        fetchUmbrales();
+    }, [session]);
+
     const handleSelectBatea = (batea) => {
         setSelected(batea);
     };
@@ -48,15 +71,16 @@ const Visualizacion = () => {
         const fetchBateaData = async () => {
             if (!selectedBatea) return;
             try {
-                const response = await fetch(`${BASE_ENDPOINT}/sectores/${selectedBatea.id}`,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${session.access_token}`,
-                        },
-                    }
-                );
-                const data = await response.json();
-                setBateaData(data);
+                // Sectores y movimientos en paralelo: los movimientos se usan
+                // tanto en la lista como para colorear la rejilla por vigencia
+                const [sectoresRes, movimientosRes] = await Promise.all([
+                    axios.get(`${BASE_ENDPOINT}/sectores/${selectedBatea.id}`,
+                        { headers: { Authorization: `Bearer ${session.access_token}` } }),
+                    axios.get(`${BASE_ENDPOINT}/movimientos/${selectedBatea.id}?vigencia=true`,
+                        { headers: { Authorization: `Bearer ${session.access_token}` } }),
+                ]);
+                setBateaData(sectoresRes.data);
+                setMovimientos(movimientosRes.data);
             } catch (error) {
                 console.error("Error fetching batea data:", error.message);
             }
@@ -93,10 +117,15 @@ const Visualizacion = () => {
                         }}
                         >
                         <Grid item sx={{ width: { xs: '100%', md: 'auto' }, maxWidth: '100%' }}>
-                            <VisualizarBatea batea={selectedBatea} bateaData={bateaData} />
+                            <VisualizarBatea
+                                batea={selectedBatea}
+                                bateaData={bateaData}
+                                movimientos={movimientos}
+                                umbrales={umbrales}
+                            />
                         </Grid>
                         <Grid item sx={{ width: { xs: '100%', md: 'auto' }, maxWidth: '100%' }}>
-                            <VisualizarMovimientos batea={selectedBatea} />
+                            <VisualizarMovimientos batea={selectedBatea} movimientos={movimientos} />
                         </Grid>
                         </Grid>
                 </Box>

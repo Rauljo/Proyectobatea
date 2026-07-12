@@ -27,6 +27,19 @@ CREATE TABLE sectores(
 	foreign key(batea) references bateas(id)
 );
 
+-- Umbral de vigencia (en meses, convención 1 mes = 30 días) a partir del cual
+-- una cuerda de cada tipo genera una alerta. Editable desde la página de Alertas.
+create table umbrales_vigencia(
+	tipo_cuerda varchar(10) primary key check (tipo_cuerda in ('pesca', 'cria', 'desdoble', 'reparque')),
+	meses int not null check (meses > 0)
+);
+
+insert into umbrales_vigencia (tipo_cuerda, meses) values
+	('pesca', 6),
+	('cria', 6),
+	('desdoble', 6),
+	('reparque', 6);
+
 create table movimientos (
 	id serial primary key,
 	tipo_cuerda varchar(10) check (tipo_cuerda in ('pesca', 'cria', 'desdoble', 'reparque')),

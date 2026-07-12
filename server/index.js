@@ -192,24 +192,67 @@ app.get("/movimientos/:id", async (req, res) => {
 }
 );
 
-//Get limit alerts
-app.get("/alerts/:limit", async (req, res) => {
+// Cuerdas vigentes que superan el umbral de vigencia de su tipo,
+// ordenadas por lo pasadas de plazo que van (convención: 1 mes = 30 días)
+app.get("/alerts", async (req, res) => {
     try {
-        const { limit } = req.params;
         const alerts = await pool.query(`
-            SELECT b.name, b.col_sector, m.id, tipo_cuerda, cantidad, operacion, vigente, sector_row, sector_col, fecha, fecha_previa, nota, vigente, now() - COALESCE(fecha_previa, fecha) as vigencia
-            FROM movimientos m join bateas b on m.sector_batea = b.id
+            SELECT b.id as batea_id, b.name, b.col_sector,
+                   m.id, m.tipo_cuerda, m.cantidad, m.sector_row, m.sector_col,
+                   now() - COALESCE(m.fecha_previa, m.fecha) as vigencia,
+                   u.meses as umbral_meses
+            FROM movimientos m
+            JOIN bateas b ON m.sector_batea = b.id
+            JOIN umbrales_vigencia u ON u.tipo_cuerda = m.tipo_cuerda
             WHERE m.vigente = true
-            ORDER BY vigencia DESC, id DESC
-            LIMIT $1`,[limit]);
-        
+              AND now() - COALESCE(m.fecha_previa, m.fecha) >= u.meses * interval '30 days'
+            ORDER BY (now() - COALESCE(m.fecha_previa, m.fecha)) - u.meses * interval '30 days' DESC, m.id DESC`);
+
         res.json(alerts.rows);
     } catch (err) {
         console.error(err.message);
+        res.status(500).json({ error: "Error en el servidor" });
     }
-}
-);
-    
+});
+
+//Get vigencia thresholds
+app.get("/umbrales", async (req, res) => {
+    try {
+        const umbrales = await pool.query("SELECT * FROM umbrales_vigencia ORDER BY tipo_cuerda");
+        res.json(umbrales.rows);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: "Error en el servidor" });
+    }
+});
+
+//Update a vigencia threshold
+app.put("/umbrales/:tipo", async (req, res) => {
+    try {
+        const { tipo } = req.params;
+        const { meses } = req.body;
+
+        const mesesNum = parseInt(meses);
+        if (isNaN(mesesNum) || mesesNum <= 0) {
+            return res.status(400).json({ error: "meses debe ser un número mayor que 0" });
+        }
+
+        const updated = await pool.query(
+            "UPDATE umbrales_vigencia SET meses = $1 WHERE tipo_cuerda = $2 RETURNING *",
+            [mesesNum, tipo]
+        );
+
+        if (updated.rows.length === 0) {
+            return res.status(404).json({ error: `Tipo de cuerda desconocido: ${tipo}` });
+        }
+
+        res.json(updated.rows[0]);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: "Error en el servidor" });
+    }
+});
+
 
 app.listen(5010, () => {
     console.log('Server is running on port 5010');
