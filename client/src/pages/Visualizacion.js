@@ -10,11 +10,12 @@ import { InfoBateas } from '../components/VisualizarBatea';
 import { BASE_ENDPOINT } from '../endpoint';
 
 import { useSession } from '../context/SessionContext';
+import { useSelectedBatea } from '../context/SelectedBateaContext';
 
 
 
 const Visualizacion = () => {
-    const [selectedBatea, setSelected] = useState(null);
+    const { selectedBatea, setSelectedBatea: setSelected } = useSelectedBatea();
     const [bateas, setBateas] = useState([]);
     const [bateaData, setBateaData] = useState(null);
     const { session } = useSession();
@@ -73,26 +74,28 @@ const Visualizacion = () => {
                     justifyContent: 'center',
                     alignItems: 'center',
                     gap: 4,
-                    marginTop: '80px',
+                    marginTop: { xs: '24px', md: '80px' },
+                    paddingX: 2,
                 }}
             >
                 <SelectorMenu onSelectBatea={handleSelectBatea} bateas={bateas} />
             </Box>
 
             {bateaData && (
-                <Box>
+                <Box sx={{ paddingX: { xs: 2, md: 4 } }}>
                     <InfoBateas batea={selectedBatea} sectores={bateaData} />
                     <Grid
                         container
                         spacing={4}
                         sx={{
+                            flexDirection: { xs: 'column', md: 'row' },
                             justifyContent: 'center',
                         }}
                         >
-                        <Grid item>
+                        <Grid item sx={{ width: { xs: '100%', md: 'auto' }, maxWidth: '100%' }}>
                             <VisualizarBatea batea={selectedBatea} bateaData={bateaData} />
                         </Grid>
-                        <Grid item>
+                        <Grid item sx={{ width: { xs: '100%', md: 'auto' }, maxWidth: '100%' }}>
                             <VisualizarMovimientos batea={selectedBatea} />
                         </Grid>
                         </Grid>

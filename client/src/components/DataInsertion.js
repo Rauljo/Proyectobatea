@@ -12,6 +12,7 @@ import InsertionForm from './InsertionForm.js';
 import { BASE_ENDPOINT } from '../endpoint.js';
 
 import { useSession } from '../context/SessionContext';
+import { useSelectedBatea } from '../context/SelectedBateaContext';
 
 
 
@@ -19,7 +20,7 @@ import { useSession } from '../context/SessionContext';
 
 
 const DataInsertion = () => {
-    const [selectedBatea, setSelected] = React.useState(null);
+    const { selectedBatea, setSelectedBatea: setSelected } = useSelectedBatea();
     const [selectedCells, setSelectedCells] = React.useState([]);
     const [bateaData, setBateaData] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -105,10 +106,12 @@ const DataInsertion = () => {
             <Box
                 sx={{
                     display: 'flex',
+                    flexDirection: { xs: 'column', sm: 'row' },
                     justifyContent: 'center',
                     alignItems: 'center',
                     gap: 4,
-                    marginTop: '80px',
+                    marginTop: { xs: '24px', md: '80px' },
+                    paddingX: 2,
                 }}
             >
                 <SelectorMenu onSelectBatea={handleSelectBatea} bateas={bateas}/>
@@ -125,20 +128,20 @@ const DataInsertion = () => {
                         display: 'flex',
                         justifyContent: 'center',
                         marginTop: '40px',
-                        paddingX: 4,
-                        overflowX: 'auto', // Opcional: permite hacer scroll horizontal si se sale de la pantalla
+                        paddingX: { xs: 2, md: 4 },
                     }}
                     >
                     <Grid
                         container
                         spacing={4}
+                        direction={{ xs: 'column', md: 'row' }}
                         sx={{
-                        width: 'fit-content', // 👈 se adapta al contenido en vez de limitarse a 100%
+                        width: { xs: '100%', md: 'fit-content' }, // 👈 ancho completo en móvil, ajustado al contenido en escritorio
                         maxWidth: '100%',     // 👈 permite expandirse todo lo que quiera, sin romper el layout
                         justifyContent: 'center',
                         }}
                     >
-                        <Grid item>
+                        <Grid item sx={{ width: { xs: '100%', md: 'auto' } }}>
                         <Box
                             sx={{
                             padding: 2,
@@ -154,7 +157,7 @@ const DataInsertion = () => {
                             />
                         </Box>
                         </Grid>
-                        <Grid item>
+                        <Grid item sx={{ width: { xs: '100%', md: 'auto' } }}>
                         <Box
                             sx={{
                             padding: 2,

@@ -1,27 +1,24 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import Collapse from '@mui/material/Collapse';
 import IconButton from '@mui/material/IconButton';
+import Typography from '@mui/material/Typography';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { BASE_ENDPOINT } from '../endpoint';
 import { useSession } from '../context/SessionContext';
 import { getSectorId } from '../helper/sector';
 import { formatVigencia } from '../helper/vigencia';
+import { toLocalDateString } from '../helper/date';
 
 // now() - fecha nunca produce meses/años, así que basta con los días para comparar
 const intervalToSeconds = (v) =>
   v ? (v.days ?? 0) * 86400 + (v.hours ?? 0) * 3600 + (v.minutes ?? 0) * 60 + (v.seconds ?? 0) : 0;
 
-const dia = (fecha) => new Date(fecha).toISOString().split('T')[0];
+// Día local del movimiento (no el día UTC): agrupa por como lo vería el
+// usuario en su calendario, no desplazado por la zona horaria.
+const dia = (fecha) => toLocalDateString(new Date(fecha));
 
 // Agrupa por día + operación + tipo de cuerda, sumando cantidad de todos los sectores.
 // vigente/vigencia no se pueden fusionar, así que se resumen: cuántas cuerdas siguen
@@ -64,88 +61,110 @@ const agruparMovimientos = (movs, cols) => {
   return [...groups.values()].sort((a, b) => b.fecha.localeCompare(a.fecha));
 };
 
-
-const GroupRow = ({ grupo, cols }) => {
+const GroupCard = ({ grupo, cols }) => {
   const [open, setOpen] = useState(false);
+  const color = grupo.operacion === 'entrada' ? 'green' : 'red';
+  const sign = grupo.operacion === 'entrada' ? '+' : '−';
 
   return (
-    <>
-      <TableRow
-        hover
+    <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, overflow: 'hidden' }}>
+      <Box
         onClick={() => setOpen((o) => !o)}
-        sx={{ cursor: 'pointer', '& > *': { borderBottom: 'unset' } }}
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1.5,
+          padding: 1.5,
+          cursor: 'pointer',
+        }}
       >
-        <TableCell>
-          <IconButton size="small">
-            {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-          </IconButton>
-        </TableCell>
-        <TableCell>{grupo.fecha}</TableCell>
-        <TableCell>{grupo.tipo_cuerda}</TableCell>
-        <TableCell
-          sx={{
-            color: grupo.operacion === "entrada" ? "green" : "red",
-            fontWeight: "bold"
-          }}
-        >
-          {grupo.operacion}
-        </TableCell>
-        <TableCell>{grupo.cantidadTotal}</TableCell>
-        <TableCell>{[...grupo.sectores].sort((a, b) => a - b).join(', ')}</TableCell>
-        <TableCell>
-          {grupo.operacion === 'entrada'
-            ? `${grupo.vigenteCantidad} de ${grupo.cantidadTotal}`
-            : '—'}
-        </TableCell>
-        <TableCell>
-          {grupo.masAntigua
-            ? `${formatVigencia(grupo.masAntigua.vigencia)} (sector ${grupo.masAntigua.sector})`
-            : '—'}
-        </TableCell>
-      </TableRow>
-      <TableRow>
-        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={8}>
-          <Collapse in={open} timeout="auto" unmountOnExit>
-            <Box sx={{ margin: 2 }}>
-              <Table size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell><strong>Hora</strong></TableCell>
-                    <TableCell><strong>Sector</strong></TableCell>
-                    <TableCell><strong>Cantidad</strong></TableCell>
-                    <TableCell><strong>Fecha Previa</strong></TableCell>
-                    <TableCell><strong>Nota</strong></TableCell>
-                    <TableCell><strong>Vigente</strong></TableCell>
-                    <TableCell><strong>Vigencia</strong></TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {grupo.movimientos.map((m) => (
-                    <TableRow key={m.id}>
-                      <TableCell>{new Date(m.fecha).toLocaleTimeString()}</TableCell>
-                      <TableCell>{getSectorId(m.sector_row, m.sector_col, cols)}</TableCell>
-                      <TableCell>{m.cantidad}</TableCell>
-                      <TableCell>{m.fecha_previa}</TableCell>
-                      <TableCell>{m.nota}</TableCell>
-                      <TableCell>
-                        {m.operacion === 'entrada' ? (
-                          m.vigente ? (
-                            <span style={{ color: "green", fontWeight: "bold" }}>Sí</span>
-                          ) : (
-                            <span style={{ color: "red", fontWeight: "bold" }}>No</span>
-                          )
-                        ) : null}
-                      </TableCell>
-                      <TableCell>{formatVigencia(m.vigencia)}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+        <Typography variant="caption" color="text.secondary" sx={{ width: '3.4em', flexShrink: 0 }}>
+          {grupo.fecha}
+        </Typography>
+
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography sx={{ fontWeight: 'bold', textTransform: 'capitalize' }}>
+              {grupo.tipo_cuerda}
+            </Typography>
+            <Typography
+              variant="caption"
+              sx={{
+                fontWeight: 'bold',
+                color,
+                backgroundColor: grupo.operacion === 'entrada' ? '#e3efe0' : '#f5e5df',
+                borderRadius: 10,
+                paddingX: 1,
+              }}
+            >
+              {grupo.operacion}
+            </Typography>
+          </Box>
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+            Sector{grupo.sectores.size > 1 ? 'es' : ''} {[...grupo.sectores].sort((a, b) => a - b).join(', ')}
+            {grupo.operacion === 'entrada' && ` · ${grupo.vigenteCantidad} de ${grupo.cantidadTotal} vigentes`}
+            {grupo.masAntigua && ` · más antigua ${formatVigencia(grupo.masAntigua.vigencia)}`}
+          </Typography>
+        </Box>
+
+        <Typography sx={{ fontWeight: 'bold', color, flexShrink: 0 }}>
+          {sign}{grupo.cantidadTotal}
+        </Typography>
+
+        <IconButton size="small">
+          {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+        </IconButton>
+      </Box>
+
+      <Collapse in={open} timeout="auto" unmountOnExit>
+        <Box sx={{ borderTop: '1px solid', borderColor: 'divider', backgroundColor: 'action.hover' }}>
+          {grupo.movimientos.map((m) => (
+            <Box
+              key={m.id}
+              sx={{
+                display: 'flex',
+                alignItems: 'baseline',
+                gap: 1,
+                padding: 1,
+                paddingX: 1.5,
+                borderBottom: '1px dashed',
+                borderColor: 'divider',
+                '&:last-of-type': { borderBottom: 'none' },
+                fontSize: '0.85rem',
+              }}
+            >
+              <Typography variant="caption" color="text.secondary" sx={{ width: '3.2em', flexShrink: 0 }}>
+                {new Date(m.fecha).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </Typography>
+              <Typography variant="body2" sx={{ fontWeight: 'bold', width: '4.5em', flexShrink: 0 }}>
+                Sector {getSectorId(m.sector_row, m.sector_col, cols)}
+              </Typography>
+              <Typography variant="body2" sx={{ width: '2.2em', flexShrink: 0 }}>
+                {m.cantidad}
+              </Typography>
+              {m.operacion === 'entrada' && (
+                <Typography
+                  variant="caption"
+                  sx={{
+                    marginLeft: 'auto',
+                    fontWeight: 'bold',
+                    color: m.vigente ? 'green' : 'red',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {m.vigente ? `Vigente · ${formatVigencia(m.vigencia)}` : 'Retirado'}
+                </Typography>
+              )}
+              {m.nota && (
+                <Typography variant="caption" color="text.secondary" sx={{ width: '100%', flexBasis: '100%' }}>
+                  {m.nota}
+                </Typography>
+              )}
             </Box>
-          </Collapse>
-        </TableCell>
-      </TableRow>
-    </>
+          ))}
+        </Box>
+      </Collapse>
+    </Box>
   );
 };
 
@@ -186,27 +205,11 @@ const VisualizarMovimientos = ({batea}) => {
         <div>
             {loading && <p>Cargando...</p>}
             <h2>Movimientos de la batea {batea.name}</h2>
-            <TableContainer component={Paper}>
-                <Table>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell />
-                            <TableCell><strong>Fecha</strong></TableCell>
-                            <TableCell><strong>Tipo de cuerda</strong></TableCell>
-                            <TableCell><strong>Operación</strong></TableCell>
-                            <TableCell><strong>Cantidad</strong></TableCell>
-                            <TableCell><strong>Sectores</strong></TableCell>
-                            <TableCell><strong>Vigentes</strong></TableCell>
-                            <TableCell><strong>Más antigua</strong></TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {grupos.map((g) => (
-                            <GroupRow key={g.key} grupo={g} cols={batea.col_sector} />
-                        ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, maxWidth: 640 }}>
+                {grupos.map((g) => (
+                    <GroupCard key={g.key} grupo={g} cols={batea.col_sector} />
+                ))}
+            </Box>
         </div>
     )
 }

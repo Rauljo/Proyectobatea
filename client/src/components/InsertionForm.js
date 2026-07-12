@@ -31,13 +31,14 @@ import axios from 'axios';
 import { BASE_ENDPOINT } from '../endpoint.js';
 import { useSession } from '../context/SessionContext.js';
 import { getSectorId, getRowCol } from '../helper/sector.js';
+import { toLocalDateString } from '../helper/date.js';
 
 
 const InsertionForm = ({ bateas, batea, selectedCells = [], onToggleCell, onClearSelection, onRefresh }) => {
     const [movementType, setMovementType] = useState('entrada');
     const [selectedCuerdaType, setSelectedCuerdaType] = useState('');
     const [cantidad, setCantidad] = useState('');
-    const [fecha, setFecha] = useState(() => new Date().toISOString().split('T')[0]);
+    const [fecha, setFecha] = useState(() => toLocalDateString(new Date()));
     const [sectorNumberInput, setSectorNumberInput] = useState('');
     const [submitting, setSubmitting] = useState(false);
 
@@ -178,7 +179,7 @@ const InsertionForm = ({ bateas, batea, selectedCells = [], onToggleCell, onClea
     };
 
     return (
-        <Card sx={{ width: 400 }}>
+        <Card sx={{ width: { xs: '100%', sm: 400 }, maxWidth: '100%' }}>
             <CardContent>
                 <Typography variant="h6" gutterBottom>
                     Movimiento de Cuerdas
@@ -236,7 +237,7 @@ const InsertionForm = ({ bateas, batea, selectedCells = [], onToggleCell, onClea
                     onChange={(e, newValue) => {
                         if (newValue !== null) setMovementType(newValue);
                     }}
-                    sx={{ my: 1 }}
+                    sx={{ my: 1, flexWrap: 'wrap' }}
                 >
                     <ToggleButton value="entrada">Entrada</ToggleButton>
                     <ToggleButton value="salida">Salida</ToggleButton>

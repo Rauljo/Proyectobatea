@@ -10,6 +10,7 @@ import Login from "./pages/Login";
 import ProtectedRoute from "./pages/ProtectedRoute";
 
 import { SessionProvider } from "./context/SessionContext";
+import { SelectedBateaProvider } from "./context/SelectedBateaContext";
 
 function App() {
 
@@ -19,13 +20,15 @@ function App() {
       <div>
         <SessionProvider>
             {/* The SessionProvider will provide the session context to all components */}
-            <Routes>
-              <Route path="/" element={<ProtectedRoute><Insercion /></ProtectedRoute>} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/insercion" element={<ProtectedRoute><Insercion /></ProtectedRoute>} />
-              <Route path="/visualizacion" element={<ProtectedRoute><Visualizacion /></ProtectedRoute>} />
-              <Route path="/alerts" element={<ProtectedRoute><VigenciaAlerts /></ProtectedRoute>} />
-            </Routes>
+            <SelectedBateaProvider>
+              <Routes>
+                <Route path="/" element={<ProtectedRoute><Insercion /></ProtectedRoute>} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/insercion" element={<ProtectedRoute><Insercion /></ProtectedRoute>} />
+                <Route path="/visualizacion" element={<ProtectedRoute><Visualizacion /></ProtectedRoute>} />
+                <Route path="/alerts" element={<ProtectedRoute><VigenciaAlerts /></ProtectedRoute>} />
+              </Routes>
+            </SelectedBateaProvider>
         </SessionProvider>
       </div>
     </div>
