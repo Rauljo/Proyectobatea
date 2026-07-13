@@ -39,6 +39,7 @@ const InsertionForm = ({ bateas, batea, selectedCells = [], onToggleCell, onClea
     const [selectedCuerdaType, setSelectedCuerdaType] = useState('');
     const [cantidad, setCantidad] = useState('');
     const [fecha, setFecha] = useState(() => toLocalDateString(new Date()));
+    const [nota, setNota] = useState('');
     const [sectorNumberInput, setSectorNumberInput] = useState('');
     const [submitting, setSubmitting] = useState(false);
 
@@ -82,7 +83,9 @@ const InsertionForm = ({ bateas, batea, selectedCells = [], onToggleCell, onClea
     const resetAfterSubmit = async () => {
         // Tipo de cuerda, tipo de movimiento y fecha se mantienen: al insertar
         // varias cuerdas nuevas seguidas, normalmente son del mismo tipo y día.
+        // La nota sí se limpia: suele ser específica de ese movimiento en concreto.
         setCantidad('');
+        setNota('');
         setDestinoBatea('');
         setDestinoRow('');
         setDestinoCol('');
@@ -107,6 +110,7 @@ const InsertionForm = ({ bateas, batea, selectedCells = [], onToggleCell, onClea
                         cantidad: cantidadParsed,
                         tipo_operacion: movementType,
                         fecha,
+                        nota,
                     }, authConfig)
                     .then(() => ({ ok: true, row, col }))
                     .catch((error) => ({
@@ -133,10 +137,14 @@ const InsertionForm = ({ bateas, batea, selectedCells = [], onToggleCell, onClea
         await resetAfterSubmit();
     };
 
-    // Intercambio: salida en el sector de origen + entrada en el sector destino
+    // Intercambio: salida en el sector de origen + entrada en el sector destino.
+    // La nota de seguimiento del intercambio ("Intercambio con Batea...") la
+    // necesita el servidor para arrastrar la fecha_previa entre bateas - nunca
+    // se sobrescribe, la nota del usuario (si la hay) se añade detrás.
     const enviarIntercambio = async (destino) => {
         const [row, col] = selectedCells[0];
         const cantidadParsed = parseInt(cantidad);
+        const conNotaUsuario = (autoNota) => (nota ? `${autoNota} · ${nota}` : autoNota);
 
         try {
             await axios.post(`${BASE_ENDPOINT}/movimientos`, {
@@ -146,7 +154,7 @@ const InsertionForm = ({ bateas, batea, selectedCells = [], onToggleCell, onClea
                 tipo_cuerda: selectedCuerdaType,
                 cantidad: cantidadParsed,
                 tipo_operacion: 'salida',
-                nota: `Intercambio con Batea ${destino.bateaName} (${destino.bateaId}) en (${destino.row + 1}, ${destino.col + 1})`,
+                nota: conNotaUsuario(`Intercambio con Batea ${destino.bateaName} (${destino.bateaId}) en (${destino.row + 1}, ${destino.col + 1})`),
                 fecha,
             }, authConfig);
 
@@ -157,7 +165,7 @@ const InsertionForm = ({ bateas, batea, selectedCells = [], onToggleCell, onClea
                 tipo_cuerda: selectedCuerdaType,
                 cantidad: cantidadParsed,
                 tipo_operacion: 'entrada',
-                nota: `Intercambio con Batea ${batea.name} (${batea.id}) en (${row + 1}, ${col + 1})`,
+                nota: conNotaUsuario(`Intercambio con Batea ${batea.name} (${batea.id}) en (${row + 1}, ${col + 1})`),
                 fecha,
             }, authConfig);
 
@@ -283,6 +291,19 @@ const InsertionForm = ({ bateas, batea, selectedCells = [], onToggleCell, onClea
                     value={fecha}
                     onChange={(e) => setFecha(e.target.value)}
                     slotProps={{ inputLabel: { shrink: true } }}
+                />
+
+                <TextField
+                    label="Nota (opcional)"
+                    fullWidth
+                    multiline
+                    minRows={2}
+                    sx={{ mt: 2 }}
+                    value={nota}
+                    onChange={(e) => setNota(e.target.value)}
+                    helperText={movementType === 'intercambio'
+                        ? 'Se añadirá junto al registro automático del intercambio.'
+                        : undefined}
                 />
 
                 <Button

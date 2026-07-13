@@ -81,52 +81,49 @@ app.post("/movimientos", async (req, res) => {
 
         let newMovimiento;
 
-        //Check if nota contains 'nota' contains the word 'Intercambio' and if tipo_operacion is 'entrada. Then we will determine fecha_previa
-        if (nota && nota.toLowerCase().includes('intercambio') && tipo_operacion === 'entrada') {
-            //nota will have the follwowing format: 'Intercambio con Batea id en sector (row, col)'. I want to obtain id, row and col
-            const regex = /Intercambio con Batea (.+) \((\d+)\) en \((\d+), (\d+)\)/;
-            const match = nota.match(regex);
-            if (match) {
-                req.batea_previa = parseInt(match[2]);
-                req.row_intercambio = parseInt(match[3])-1;
-                req.col_intercambio = parseInt(match[4])-1;
+        // Solo tratamos la nota como marca de intercambio si además coincide
+        // con el formato exacto que genera el propio frontend; si un usuario
+        // escribe una nota libre que simplemente contiene la palabra
+        // "intercambio" (sin ese formato), cae al insert normal en vez de
+        // fallar en silencio.
+        const regex = /Intercambio con Batea (.+) \((\d+)\) en \((\d+), (\d+)\)/;
+        const match = tipo_operacion === 'entrada' && nota ? nota.match(regex) : null;
 
+        if (match) {
+            const batea_previa = parseInt(match[2]);
+            const row_intercambio = parseInt(match[3]) - 1;
+            const col_intercambio = parseInt(match[4]) - 1;
 
-                const movimientoPrevio = await pool.query(`
-                    SELECT COALESCE(fecha_previa, fecha) as fecha FROM movimientos
-                    WHERE sector_row = $1 AND sector_col = $2 AND sector_batea = $3
-                    AND operacion = 'entrada' AND tipo_cuerda = $4
-                    ORDER BY fecha DESC LIMIT 1`, //TODO: RESOLVER PROBLEMAS CON ZONAS TEMPORALES... 
-                    [req.row_intercambio, req.col_intercambio, req.batea_previa, tipo_cuerda]
-                );
+            const movimientoPrevio = await pool.query(`
+                SELECT COALESCE(fecha_previa, fecha) as fecha FROM movimientos
+                WHERE sector_row = $1 AND sector_col = $2 AND sector_batea = $3
+                AND operacion = 'entrada' AND tipo_cuerda = $4
+                ORDER BY fecha DESC LIMIT 1`, //TODO: RESOLVER PROBLEMAS CON ZONAS TEMPORALES...
+                [row_intercambio, col_intercambio, batea_previa, tipo_cuerda]
+            );
 
+            const fecha_previa = movimientoPrevio.rows.length > 0 ? movimientoPrevio.rows[0].fecha : null;
 
-
-
-                const fecha_previa = movimientoPrevio.rows.length > 0 ? movimientoPrevio.rows[0].fecha : null;
-
-                
-                //fecha_previa of this movement will be the date of the last movement of the same tipo_cuerda and tipo_operacion = 'entrada' in the other batea
-                newMovimiento = await pool.query(`
-                    INSERT INTO movimientos (
-                        tipo_cuerda, cantidad, operacion, sector_row, sector_col, sector_batea, fecha_previa, nota, fecha
-                    )
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, COALESCE($9, now()))
-                    RETURNING *`,
-                    [tipo_cuerda, cantidad, tipo_operacion, row, col, batea, fecha_previa, nota || '', fecha || null]
-                );
-            }
+            //fecha_previa of this movement will be the date of the last movement of the same tipo_cuerda and tipo_operacion = 'entrada' in the other batea
+            newMovimiento = await pool.query(`
+                INSERT INTO movimientos (
+                    tipo_cuerda, cantidad, operacion, sector_row, sector_col, sector_batea, fecha_previa, nota, fecha
+                )
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, COALESCE($9, now()))
+                RETURNING *`,
+                [tipo_cuerda, cantidad, tipo_operacion, row, col, batea, fecha_previa, nota || '', fecha || null]
+            );
         }
-        else{
+        else {
             newMovimiento = await pool.query(`
                 INSERT INTO movimientos (tipo_cuerda, cantidad, operacion, sector_row, sector_col, sector_batea, nota, fecha)
                 VALUES($1, $2, $3, $4, $5, $6, $7, COALESCE($8, now()))
                 RETURNING *`,
                 [tipo_cuerda, cantidad, tipo_operacion, row, col, batea, nota || '', fecha || null]
             );
-        }     
+        }
 
-        
+
 
         res.json(newMovimiento.rows[0]);
     } catch (err) {
