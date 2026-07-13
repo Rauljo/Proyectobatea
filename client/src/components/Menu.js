@@ -20,6 +20,7 @@ import supabase from '../helper/supabase';
 const navItems = [
     { label: 'Inserción', to: '/insercion' },
     { label: 'Visualización', to: '/visualizacion' },
+    { label: 'Producción', to: '/produccion' },
     { label: 'Alertas', to: '/alerts' },
 ];
 
