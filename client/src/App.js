@@ -5,6 +5,7 @@ import './App.css';
 import Navigation from "./components/Menu";
 import Insercion from "./pages/Insercion";
 import Visualizacion from "./pages/Visualizacion";
+import Produccion from "./pages/Produccion";
 import VigenciaAlerts from "./pages/VigenciaAlerts";
 import Login from "./pages/Login";
 import ProtectedRoute from "./pages/ProtectedRoute";
@@ -26,6 +27,7 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/insercion" element={<ProtectedRoute><Insercion /></ProtectedRoute>} />
                 <Route path="/visualizacion" element={<ProtectedRoute><Visualizacion /></ProtectedRoute>} />
+                <Route path="/produccion" element={<ProtectedRoute><Produccion /></ProtectedRoute>} />
                 <Route path="/alerts" element={<ProtectedRoute><VigenciaAlerts /></ProtectedRoute>} />
               </Routes>
             </SelectedBateaProvider>

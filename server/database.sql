@@ -27,6 +27,18 @@ CREATE TABLE sectores(
 	foreign key(batea) references bateas(id)
 );
 
+-- Producción diaria de sacos de mejillón por batea. Se relaciona con los
+-- movimientos por (fecha, batea): los sacos de un día salen de las salidas
+-- de ese día en esa batea (sin FK a movimientos a propósito).
+create table producciones(
+	id serial primary key,
+	fecha date not null,
+	batea int not null references bateas(id),
+	tipo_saco varchar(20) not null check (tipo_saco in ('fresco_pequeno', 'fresco_mediano', 'fresco_grande', 'conservera')),
+	cantidad int not null check (cantidad > 0),
+	nota varchar(255) default ''
+);
+
 -- Umbral de vigencia (en meses, convención 1 mes = 30 días) a partir del cual
 -- una cuerda de cada tipo genera una alerta. Editable desde la página de Alertas.
 create table umbrales_vigencia(

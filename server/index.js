@@ -251,6 +251,71 @@ app.put("/umbrales/:tipo", async (req, res) => {
 });
 
 
+//Register a day's production for a raft (several bag types at once)
+app.post("/producciones", async (req, res) => {
+    const client = await pool.connect();
+    try {
+        const { fecha, batea, sacos, nota } = req.body;
+
+        if (!fecha || !batea || !Array.isArray(sacos) || sacos.length === 0) {
+            return res.status(400).json({ error: "Faltan fecha, batea o sacos" });
+        }
+
+        await client.query('BEGIN');
+        const inserted = [];
+        for (const { tipo_saco, cantidad } of sacos) {
+            const r = await client.query(
+                `INSERT INTO producciones (fecha, batea, tipo_saco, cantidad, nota)
+                 VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+                [fecha, batea, tipo_saco, cantidad, nota || '']
+            );
+            inserted.push(r.rows[0]);
+        }
+        await client.query('COMMIT');
+
+        res.json(inserted);
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error(err.message);
+        res.status(500).json({ error: "Error en el servidor" });
+    } finally {
+        client.release();
+    }
+});
+
+//Get production history of a raft
+app.get("/producciones/:bateaId", async (req, res) => {
+    try {
+        const { bateaId } = req.params;
+        const producciones = await pool.query(
+            `SELECT * FROM producciones WHERE batea = $1 ORDER BY fecha DESC, id DESC`,
+            [bateaId]
+        );
+        res.json(producciones.rows);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: "Error en el servidor" });
+    }
+});
+
+//Delete a production entry (no side effects, unlike movimientos)
+app.delete("/producciones/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const deleted = await pool.query(
+            "DELETE FROM producciones WHERE id = $1 RETURNING *",
+            [id]
+        );
+        if (deleted.rows.length === 0) {
+            return res.status(404).json({ error: "Producción no encontrada" });
+        }
+        res.json(deleted.rows[0]);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: "Error en el servidor" });
+    }
+});
+
 app.listen(5010, () => {
     console.log('Server is running on port 5010');
 });
