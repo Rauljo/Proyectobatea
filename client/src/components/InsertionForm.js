@@ -7,7 +7,6 @@ import {
     Typography,
     Card,
     CardContent,
-    Grid,
     MenuItem,
     Select,
     FormControl,
@@ -26,12 +25,82 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 
 import SelectorMenu from './SelectorMenu.js';
+import { CUERDA_EMOJI } from './VisualizarBatea.js';
 
 import axios from 'axios';
 import { BASE_ENDPOINT } from '../endpoint.js';
 import { useSession } from '../context/SessionContext.js';
 import { getSectorId, getRowCol } from '../helper/sector.js';
 import { toLocalDateString } from '../helper/date.js';
+import { useResponsiveCellSize } from '../helper/useResponsiveCellSize.js';
+
+
+// Rejilla de sectores de la batea destino de un intercambio: muestra cuántas
+// cuerdas del tipo elegido hay ya en cada sector, y permite elegir uno solo
+// (clic reemplaza la selección anterior, no es multi-selección como en el
+// esquema de inserción).
+const SectorDestinoGrid = ({ destinoBatea, tipoCuerda, selectedCell, onSelectCell }) => {
+    const [sectores, setSectores] = useState(null);
+    const { session } = useSession();
+    const cols = destinoBatea.col_sector;
+    const rows = destinoBatea.row_sector;
+    const { containerRef, cellSize, gap } = useResponsiveCellSize(cols);
+
+    useEffect(() => {
+        let active = true;
+        axios.get(`${BASE_ENDPOINT}/sectores/${destinoBatea.id}`,
+            { headers: { Authorization: `Bearer ${session.access_token}` } }
+        ).then((res) => { if (active) setSectores(res.data); });
+        return () => { active = false; };
+    }, [destinoBatea.id, session]);
+
+    if (!sectores) return <Typography variant="body2" color="text.secondary">Cargando sectores...</Typography>;
+
+    return (
+        <div ref={containerRef} style={{ maxWidth: '100%', overflowX: 'auto' }}>
+            <div
+                style={{
+                    display: 'grid',
+                    gridTemplateColumns: `repeat(${cols}, ${cellSize}px)`,
+                    gap: `${gap}px`,
+                    marginTop: '12px',
+                }}
+            >
+                {Array.from({ length: rows }).flatMap((_, r) =>
+                    Array.from({ length: cols }).map((_, c) => {
+                        const sector = sectores.find((s) => s.row === r && s.col === c);
+                        const cantidad = sector?.[`cuerdas_${tipoCuerda}`] ?? 0;
+                        const selected = selectedCell?.[0] === r && selectedCell?.[1] === c;
+
+                        return (
+                            <div
+                                key={`${r}-${c}`}
+                                onClick={() => onSelectCell([r, c])}
+                                style={{
+                                    padding: '8px 4px',
+                                    textAlign: 'center',
+                                    cursor: 'pointer',
+                                    backgroundColor: selected ? '#4caf50' : '#e0e0e0',
+                                    color: selected ? 'white' : 'black',
+                                    borderRadius: '8px',
+                                    userSelect: 'none',
+                                    fontWeight: 'bold',
+                                }}
+                            >
+                                <div>{getSectorId(r, c, cols)}</div>
+                                {cantidad > 0 && (
+                                    <div style={{ fontSize: '0.75em', fontWeight: 'normal' }}>
+                                        {CUERDA_EMOJI[tipoCuerda]} {cantidad}
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })
+                )}
+            </div>
+        </div>
+    );
+};
 
 
 const InsertionForm = ({ bateas, batea, selectedCells = [], onToggleCell, onClearSelection, onRefresh }) => {
@@ -45,9 +114,14 @@ const InsertionForm = ({ bateas, batea, selectedCells = [], onToggleCell, onClea
 
     const [dialogOpen, setDialogOpen] = useState(false);
     const [destinoBatea, setDestinoBatea] = useState('');
-    const [destinoRow, setDestinoRow] = useState('');
-    const [destinoCol, setDestinoCol] = useState('');
+    const [destinoCell, setDestinoCell] = useState(null);
     const { session } = useSession();
+
+    // Al cambiar de batea destino, la celda seleccionada pertenecía a la anterior
+    const handleSelectDestinoBatea = (b) => {
+        setDestinoBatea(b);
+        setDestinoCell(null);
+    };
 
     const cols = batea.col_sector;
     const rows = batea.row_sector;
@@ -68,6 +142,11 @@ const InsertionForm = ({ bateas, batea, selectedCells = [], onToggleCell, onClea
         .map(([r, c]) => getSectorId(r, c, cols))
         .sort((a, b) => a - b);
 
+    // Evita un intercambio sin sentido: mismo sector de origen y destino
+    const esMismoSectorOrigen = destinoBatea.id === batea.id &&
+        destinoCell?.[0] === selectedCells[0]?.[0] &&
+        destinoCell?.[1] === selectedCells[0]?.[1];
+
     const handleAddByNumber = () => {
         const n = parseInt(sectorNumberInput);
         if (isNaN(n) || n < 1 || n > rows * cols) {
@@ -87,8 +166,7 @@ const InsertionForm = ({ bateas, batea, selectedCells = [], onToggleCell, onClea
         setCantidad('');
         setNota('');
         setDestinoBatea('');
-        setDestinoRow('');
-        setDestinoCol('');
+        setDestinoCell(null);
         setDialogOpen(false);
         if (onRefresh) await onRefresh();
         if (onClearSelection) onClearSelection();
@@ -319,7 +397,7 @@ const InsertionForm = ({ bateas, batea, selectedCells = [], onToggleCell, onClea
                         : `Enviar a ${selectedCells.length} sector${selectedCells.length === 1 ? '' : 'es'}`}
                 </Button>
             </CardContent>
-            <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} fullWidth>
+            <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} fullWidth maxWidth="md">
                 <DialogTitle>
                     Indicar destino del intercambio
                     <IconButton
@@ -332,28 +410,27 @@ const InsertionForm = ({ bateas, batea, selectedCells = [], onToggleCell, onClea
                 </DialogTitle>
                 <DialogContent dividers>
                     <FormControl fullWidth sx={{ mt: 2 }}>
-                        <SelectorMenu bateas={bateas} onSelectBatea={setDestinoBatea} />
+                        <SelectorMenu bateas={bateas} onSelectBatea={handleSelectDestinoBatea} />
                     </FormControl>
-                    <Grid container spacing={2} sx={{ mt: 1 }}>
-                        <Grid item xs={6}>
-                            <TextField
-                                label="Fila Destino"
-                                type="number"
-                                fullWidth
-                                value={destinoRow}
-                                onChange={(e) => setDestinoRow(e.target.value)}
+
+                    {destinoBatea.id && (
+                        <>
+                            <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+                                Elige el sector destino en {destinoBatea.name} ({CUERDA_EMOJI[selectedCuerdaType]} cuerdas de {selectedCuerdaType} ya presentes)
+                            </Typography>
+                            <SectorDestinoGrid
+                                destinoBatea={destinoBatea}
+                                tipoCuerda={selectedCuerdaType}
+                                selectedCell={destinoCell}
+                                onSelectCell={setDestinoCell}
                             />
-                        </Grid>
-                        <Grid item xs={6}>
-                            <TextField
-                                label="Columna Destino"
-                                type="number"
-                                fullWidth
-                                value={destinoCol}
-                                onChange={(e) => setDestinoCol(e.target.value)}
-                            />
-                        </Grid>
-                    </Grid>
+                            {esMismoSectorOrigen && (
+                                <Typography variant="caption" color="error" display="block" sx={{ mt: 1 }}>
+                                    Es el mismo sector de origen: elige un sector distinto.
+                                </Typography>
+                            )}
+                        </>
+                    )}
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => setDialogOpen(false)} color="secondary">
@@ -364,13 +441,13 @@ const InsertionForm = ({ bateas, batea, selectedCells = [], onToggleCell, onClea
                             enviarIntercambio({
                                 bateaId: destinoBatea.id,
                                 bateaName: destinoBatea.name,
-                                row: parseInt(destinoRow) - 1,
-                                col: parseInt(destinoCol) - 1
+                                row: destinoCell[0],
+                                col: destinoCell[1],
                             })
                         }
                         color="primary"
                         variant="contained"
-                        disabled={!destinoBatea.id || !destinoRow || !destinoCol}
+                        disabled={!destinoBatea.id || !destinoCell || esMismoSectorOrigen}
                     >
                         Confirmar Intercambio
                     </Button>
