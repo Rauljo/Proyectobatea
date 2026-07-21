@@ -24,3 +24,19 @@ export const getSeveridad = (vigencia, umbralMeses) => {
   if (days < umbralDays + 30) return 'atencion';
   return 'urgente';
 };
+
+// Color continuo (verde -> rojo) según la edad real respecto al umbral de su
+// tipo, en vez de 3 cortes discretos: se nota la progresión incluso antes de
+// pasarse de plazo. ratio 0 = recién entrada, 1 = justo en el umbral, 1.5 =
+// tres meses pasada de plazo (a partir de ahí, tope en rojo).
+const gradientRatio = (days, umbralMeses) => Math.min(1.5, days / (umbralMeses * 30));
+
+export const gradientColorFor = (days, umbralMeses) => {
+  const hue = 132 - (132 / 1.5) * gradientRatio(days, umbralMeses);
+  return `hsl(${hue.toFixed(0)} 55% 76%)`;
+};
+
+export const gradientInkFor = (days, umbralMeses) => {
+  const hue = 132 - (132 / 1.5) * gradientRatio(days, umbralMeses);
+  return `hsl(${hue.toFixed(0)} 60% 24%)`;
+};
