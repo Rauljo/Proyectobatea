@@ -21,7 +21,7 @@ import { useSelectedBatea } from '../context/SelectedBateaContext';
 import { getSectorId } from '../helper/sector';
 import { toLocalDateString } from '../helper/date';
 import { formatVigencia } from '../helper/vigencia';
-import { TIPOS_SACO, SACO_LABEL } from '../helper/sacos';
+import { TIPOS_SACO, SACO_LABEL, SACO_UNIDAD, kgFor } from '../helper/sacos';
 
 const dia = (fecha) => toLocalDateString(new Date(fecha));
 
@@ -46,7 +46,12 @@ const RegistroForm = ({ batea, onRegistered }) => {
     .filter((t) => parseInt(cantidades[t.value]) > 0)
     .map((t) => ({ tipo_saco: t.value, cantidad: parseInt(cantidades[t.value]) }));
 
-  const totalSacos = sacos.reduce((sum, s) => sum + s.cantidad, 0);
+  // Sacos y kg no son lo mismo (fábrica se mide directo en kg), así que se
+  // muestran los dos: nº de sacos (sin contar fábrica) y kg totales reales.
+  const totalSacos = sacos
+    .filter((s) => SACO_UNIDAD[s.tipo_saco] === 'saco')
+    .reduce((sum, s) => sum + s.cantidad, 0);
+  const totalKg = sacos.reduce((sum, s) => sum + kgFor(s.tipo_saco, s.cantidad), 0);
 
   const handleSubmit = async () => {
     setSubmitting(true);
@@ -90,7 +95,7 @@ const RegistroForm = ({ batea, onRegistered }) => {
           {TIPOS_SACO.map((t) => (
             <Grid item xs={6} key={t.value}>
               <TextField
-                label={t.label}
+                label={`${t.label} (${t.unidad === 'kg' ? 'kg' : 'sacos'})`}
                 type="number"
                 fullWidth
                 inputProps={{ min: 0 }}
@@ -111,16 +116,21 @@ const RegistroForm = ({ batea, onRegistered }) => {
           onChange={(e) => setNota(e.target.value)}
         />
 
+        {sacos.length > 0 && (
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+            {totalSacos > 0 && `${totalSacos} saco${totalSacos === 1 ? '' : 's'} · `}
+            {totalKg} kg en total
+          </Typography>
+        )}
+
         <Button
           variant="contained"
           fullWidth
-          sx={{ mt: 3 }}
+          sx={{ mt: 2 }}
           onClick={handleSubmit}
           disabled={sacos.length === 0 || submitting}
         >
-          {totalSacos > 0
-            ? `Registrar ${totalSacos} saco${totalSacos === 1 ? '' : 's'}`
-            : 'Registrar producción'}
+          Registrar producción
         </Button>
       </CardContent>
     </Card>
@@ -132,7 +142,10 @@ const RegistroForm = ({ batea, onRegistered }) => {
 const DiaCard = ({ fecha, entradas: rows, movimientos, cols, onDelete }) => {
   const [open, setOpen] = useState(false);
 
-  const totalSacos = rows.reduce((sum, r) => sum + r.cantidad, 0);
+  const totalSacos = rows
+    .filter((r) => SACO_UNIDAD[r.tipo_saco] === 'saco')
+    .reduce((sum, r) => sum + r.cantidad, 0);
+  const totalKg = rows.reduce((sum, r) => sum + kgFor(r.tipo_saco, r.cantidad), 0);
 
   // Movimientos de ese mismo día en esta batea
   const salidasDia = movimientos.filter(
@@ -152,7 +165,8 @@ const DiaCard = ({ fecha, entradas: rows, movimientos, cols, onDelete }) => {
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <Typography sx={{ fontWeight: 'bold' }}>{fecha}</Typography>
           <Typography variant="caption" color="text.secondary">
-            {totalSacos} saco{totalSacos === 1 ? '' : 's'}
+            {totalSacos > 0 && `${totalSacos} saco${totalSacos === 1 ? '' : 's'} · `}
+            {totalKg} kg
             {salidasDia.length > 0
               ? ` · ${salidasDia.length} salida${salidasDia.length === 1 ? '' : 's'} ese día`
               : ' · sin salidas registradas ese día'}
@@ -166,12 +180,13 @@ const DiaCard = ({ fecha, entradas: rows, movimientos, cols, onDelete }) => {
       <Collapse in={open} timeout="auto" unmountOnExit>
         <Box sx={{ borderTop: '1px solid', borderColor: 'divider', backgroundColor: 'action.hover', padding: 1.5 }}>
 
-          {/* Sacos registrados */}
-          <Typography variant="subtitle2" gutterBottom>Sacos</Typography>
+          {/* Producción registrada */}
+          <Typography variant="subtitle2" gutterBottom>Producción</Typography>
           {rows.map((r) => (
             <Box key={r.id} sx={{ display: 'flex', alignItems: 'center', gap: 1, paddingY: 0.25 }}>
               <Typography variant="body2" sx={{ flex: 1 }}>
-                {SACO_LABEL[r.tipo_saco] ?? r.tipo_saco}: <strong>{r.cantidad}</strong>
+                {SACO_LABEL[r.tipo_saco] ?? r.tipo_saco}: <strong>{r.cantidad}</strong>{' '}
+                {SACO_UNIDAD[r.tipo_saco] === 'kg' ? 'kg' : `saco${r.cantidad === 1 ? '' : 's'} (${kgFor(r.tipo_saco, r.cantidad)} kg)`}
                 {r.nota && (
                   <Typography component="span" variant="caption" color="text.secondary">
                     {' '}· {r.nota}
@@ -264,7 +279,8 @@ const Produccion = () => {
 
   const handleDelete = async (row) => {
     const label = SACO_LABEL[row.tipo_saco] ?? row.tipo_saco;
-    if (!window.confirm(`¿Eliminar el registro de ${row.cantidad} sacos (${label})?`)) return;
+    const unidad = SACO_UNIDAD[row.tipo_saco] === 'kg' ? 'kg' : 'sacos';
+    if (!window.confirm(`¿Eliminar el registro de ${row.cantidad} ${unidad} (${label})?`)) return;
     try {
       await axios.delete(`${BASE_ENDPOINT}/producciones/${row.id}`,
         { headers: { Authorization: `Bearer ${session.access_token}` } });

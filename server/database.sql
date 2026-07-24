@@ -27,14 +27,17 @@ CREATE TABLE sectores(
 	foreign key(batea) references bateas(id)
 );
 
--- Producción diaria de sacos de mejillón por batea. Se relaciona con los
--- movimientos por (fecha, batea): los sacos de un día salen de las salidas
--- de ese día en esa batea (sin FK a movimientos a propósito).
+-- Producción diaria de mejillón por batea. Se relaciona con los movimientos
+-- por (fecha, batea): los sacos de un día salen de las salidas de ese día en
+-- esa batea (sin FK a movimientos a propósito).
+-- Casi todos los tipos se miden en sacos (10kg/saco, ver KG_POR_SACO en el
+-- cliente); "fabrica" es la excepción y se vende por kg directo, así que
+-- "cantidad" en esas filas ya son kg, no sacos.
 create table producciones(
 	id serial primary key,
 	fecha date not null,
 	batea int not null references bateas(id),
-	tipo_saco varchar(20) not null check (tipo_saco in ('fresco_pequeno', 'fresco_mediano', 'fresco_grande', 'conservera')),
+	tipo_saco varchar(20) not null check (tipo_saco in ('grande', 'normal_fresco', 'pequeno_fresco', 'pequeno_exportacion', 'dop', 'reparcado', 'fabrica')),
 	cantidad int not null check (cantidad > 0),
 	nota varchar(255) default ''
 );
